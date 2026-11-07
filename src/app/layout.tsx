@@ -1,11 +1,10 @@
-import { Inter } from "next/font/google";
+import { Fredoka, Inter } from "next/font/google";
 import localFont from "next/font/local";
 
 import type { Metadata } from "next";
 
-import { Footer } from "@/components/blocks/footer";
-import { Navbar } from "@/components/blocks/navbar";
 import { StyleGlideProvider } from "@/components/styleglide-provider";
+import { ThemePicker } from "@/components/theme-picker";
 import { ThemeProvider } from "@/components/theme-provider";
 import "@/styles/globals.css";
 
@@ -61,31 +60,32 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
+const fredoka = Fredoka({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-fredoka",
+});
+
 export const metadata: Metadata = {
   title: {
-    default: "Mainline - Modern Next.js Template",
-    template: "%s | Mainline",
+    default: "Sojao AI – Your business sleeps. Your customers don't.",
+    template: "%s | Sojao AI",
   },
   description:
-    "A modern Next.js template built with shadcn/ui, Tailwind & MDX. Open source - MIT License.",
+    "Never miss a sale in your DMs again. Sojao answers every customer on Instagram, Messenger and WhatsApp like your best salesperson, 24/7.",
   keywords: [
-    "Next.js",
-    "nextjs template",
-    "nextjs theme",
-    "nextjs starter",
-    "shadcn template",
-    "shadcn theme",
-    "shadcn starter",
-    "tailwind template",
-    "tailwind theme",
-    "tailwind starter",
-    "mdx template",
-    "mdx theme",
-    "mdx starter",
+    "Instagram DM automation",
+    "AI sales agent",
+    "WhatsApp AI",
+    "Facebook Messenger AI",
+    "comment to DM",
+    "ManyChat alternative",
+    "Shopify AI chat",
+    "small business customer support",
   ],
-  authors: [{ name: "shadcnblocks.com" }],
-  creator: "shadcnblocks.com",
-  publisher: "shadcnblocks.com",
+  authors: [{ name: "Nexthorne" }],
+  creator: "Nexthorne",
+  publisher: "Nexthorne",
   robots: {
     index: true,
     follow: true,
@@ -102,26 +102,25 @@ export const metadata: Metadata = {
     shortcut: [{ url: "/favicon/favicon.ico" }],
   },
   openGraph: {
-    title: "Mainline - Modern Next.js Template",
+    title: "Sojao AI – Your business sleeps. Your customers don't.",
     description:
-      "A modern Next.js template built with shadcn/ui, Tailwind & MDX. Open source - MIT License.",
-    siteName: "Mainline",
+      "Never miss a sale in your DMs again. Sojao answers every customer like your best salesperson, 24/7.",
+    siteName: "Sojao AI",
     images: [
       {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Mainline - Modern Next.js Template",
+        alt: "Sojao AI – Your business sleeps. Your customers don't.",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mainline - Modern Next.js Template",
+    title: "Sojao AI – Your business sleeps. Your customers don't.",
     description:
-      "A modern Next.js template built with shadcn/ui, Tailwind & MDX. Open source - MIT License.",
+      "Never miss a sale in your DMs again. Sojao answers every customer like your best salesperson, 24/7.",
     images: ["/og-image.jpg"],
-    creator: "@ausrobdev",
   },
 };
 
@@ -139,17 +138,26 @@ export default function RootLayout({
           src="https://tweakcn.com/live-preview.min.js"
         />
       </head>
-      <body className={`${dmSans.variable} ${inter.variable} antialiased`}>
+      <body className={`${dmSans.variable} ${inter.variable} ${fredoka.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
           enableSystem
+          themes={[
+            "light",
+            "dark",
+            "crimson",
+            "toxic",
+            "inferno",
+            "neon",
+            "electric",
+            "cobalt",
+          ]}
           disableTransitionOnChange
         >
           <StyleGlideProvider />
-          <Navbar />
-          <main className="">{children}</main>
-          <Footer />
+          {children}
+          <ThemePicker />
         </ThemeProvider>
       </body>
     </html>

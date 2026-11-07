@@ -9,12 +9,12 @@ import { DashedLine } from "@/components/dashed-line";
 
 const contactInfo = [
   {
-    title: "Corporate office",
+    title: "Company",
     content: (
       <p className="text-muted-foreground mt-3">
-        1 Carlsberg Close
+        Nexthorne
         <br />
-        1260 Hillview, Australia
+        [Business address]
       </p>
     ),
   },
@@ -23,21 +23,21 @@ const contactInfo = [
     content: (
       <div className="mt-3">
         <div>
-          <p className="">Careers</p>
+          <p className="">Support</p>
           <Link
-            href="mailto:careers@example.com"
+            href="#"
             className="text-muted-foreground hover:text-foreground"
           >
-            careers@example.com
+            [support email]
           </Link>
         </div>
         <div className="mt-1">
-          <p className="">Press</p>
+          <p className="">Partnerships</p>
           <Link
-            href="mailto:press@example.com"
+            href="#"
             className="text-muted-foreground hover:text-foreground"
           >
-            press@example.com
+            [partnerships email]
           </Link>
         </div>
       </div>
@@ -51,7 +51,7 @@ const contactInfo = [
           <Facebook className="size-5" />
         </Link>
         <Link
-          href="https://x.com/ausrobdev"
+          href="#"
           className="text-muted-foreground hover:text-foreground"
         >
           <Twitter className="size-5" />
@@ -69,10 +69,11 @@ export default function Contact() {
     <section className="py-28 lg:py-32 lg:pt-44">
       <div className="container max-w-2xl">
         <h1 className="text-center text-2xl font-semibold tracking-tight md:text-4xl lg:text-5xl">
-          Contact us
+          Talk to us
         </h1>
         <p className="text-muted-foreground mt-4 text-center leading-snug font-medium lg:mx-auto">
-          Hopefully this form gets through our spam filters.
+          Questions about Sojao or the beta? Send us a note and a real person
+          will get back to you.
         </p>
 
         <div className="mt-10 flex justify-between gap-8 max-sm:flex-col md:mt-14 lg:mt-20 lg:gap-12">
@@ -88,7 +89,7 @@ export default function Contact() {
 
         {/* Inquiry Form */}
         <div className="mx-auto">
-          <h2 className="mb-4 text-lg font-semibold">Inquiries</h2>
+          <h2 className="mb-4 text-lg font-semibold">Send us a message</h2>
           <ContactForm />
         </div>
       </div>

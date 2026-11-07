@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { ChevronRight, Github } from "lucide-react";
 
+import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,15 +26,16 @@ const ITEMS = [
     href: "#features",
     dropdownItems: [
       {
-        title: "Modern product teams",
+        title: "Marketing, sales and support",
         href: "/#feature-modern-teams",
         description:
-          "Mainline is built on the habits that make the best product teams successful",
+          "One AI agent that brings customers in, sells to them and looks after them",
       },
       {
-        title: "Resource Allocation",
+        title: "How it works",
         href: "/#resource-allocation",
-        description: "Mainline your resource allocation and execution",
+        description:
+          "Answers from your store, follow-ups, handover and order updates",
       },
     ],
   },
@@ -53,18 +54,12 @@ export const Navbar = () => {
     <section
       className={cn(
         "bg-background/70 absolute left-1/2 z-50 w-[min(90%,700px)] -translate-x-1/2 rounded-4xl border backdrop-blur-md transition-all duration-300",
-        "top-5 lg:top-12",
+        "top-14 lg:top-[88px]",
       )}
     >
       <div className="flex items-center justify-between px-6 py-3">
         <Link href="/" className="flex shrink-0 items-center gap-2">
-          <Image
-            src="/logo.svg"
-            alt="logo"
-            width={94}
-            height={18}
-            className="dark:invert"
-          />
+          <Logo className="text-[26px]" />
         </Link>
 
         {/* Desktop Navigation */}
@@ -122,11 +117,11 @@ export const Navbar = () => {
           <ThemeToggle />
           <Link href="/login" className="max-lg:hidden">
             <Button variant="outline">
-              <span className="relative z-10">Login</span>
+              <span className="relative z-10">Log in</span>
             </Button>
           </Link>
           <a
-            href="https://github.com/shadcnblocks/mainline-nextjs-template"
+            href="#"
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <Github className="size-4" />

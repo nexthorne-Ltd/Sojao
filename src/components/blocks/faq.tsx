@@ -10,52 +10,57 @@ import { cn } from "@/lib/utils";
 
 const categories = [
   {
-    title: "Support",
+    title: "Getting started",
     questions: [
       {
-        question: "How do I update my account without breaking my laptop?",
+        question: "How long does setup take?",
         answer:
-          "Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus voluptates deserunt officia temporibus dignissimos.",
+          "About 10 minutes. Connect Instagram or WhatsApp, connect your store, and go live. There are no flows to build.",
       },
       {
-        question: "Is support free, or do I need to Google everything?",
+        question: "Do I need Shopify?",
         answer:
-          "Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus voluptates deserunt officia temporibus dignissimos.",
+          "No. Sojao works with or without Shopify. If you use Shopify, Sojao can also answer order and delivery questions from your live store data.",
       },
       {
-        question: "Are you going to be subsumed by AI?",
+        question: "Which apps does Sojao work on?",
         answer:
-          "Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus voluptates deserunt officia temporibus dignissimos.",
+          "Instagram, Facebook Messenger and WhatsApp. Sojao answers your customers on all three, day and night.",
       },
     ],
   },
   {
-    title: "Your account",
+    title: "Pricing and the beta",
     questions: [
       {
-        question: "Is support free, or do I need to Google everything?",
+        question: "Can I try Sojao for free?",
         answer:
-          "Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus voluptates deserunt officia temporibus dignissimos.",
+          "Yes. Early brands in our beta get the first 3 months free, then a 50% founding discount.",
       },
       {
-        question: "Are you going to be subsumed by AI?",
+        question: "Is there a yearly plan?",
         answer:
-          "Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus voluptates deserunt officia temporibus dignissimos.",
+          "Yes. Pay yearly and you get 2 months free. WhatsApp marketing message fees from Meta are billed at cost.",
       },
     ],
   },
   {
-    title: "Other questions",
+    title: "How Sojao works",
     questions: [
       {
-        question: "Is support free, or do I need to Google everything?",
+        question: "How is Sojao different from ManyChat?",
         answer:
-          "Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus voluptates deserunt officia temporibus dignissimos.",
+          "ManyChat only brings customers in, and you build every flow by hand. Sojao brings them in, sells to them, and looks after them after the sale. It understands your customers by itself, so there is nothing to build.",
       },
       {
-        question: "Are you going to be subsumed by AI?",
+        question: "What if Sojao doesn't know an answer?",
         answer:
-          "Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus voluptates deserunt officia temporibus dignissimos.",
+          "It hands the chat to you. Sojao learns from every reply you send, so it gets better over time.",
+      },
+      {
+        question: "Who is Sojao for?",
+        answer:
+          "Small Instagram-first brands with 1 to 10 people, mainly in fashion, beauty and accessories. If you answer your own DMs and lose sales at night, Sojao is for you.",
       },
     ],
   },
@@ -77,19 +82,19 @@ export const FAQ = ({
           <div className="space-y-4">
             {headerTag === "h1" ? (
               <h1 className="text-2xl tracking-tight md:text-4xl lg:text-5xl">
-                Got Questions?
+                Questions? We've got answers.
               </h1>
             ) : (
               <h2 className="text-2xl tracking-tight md:text-4xl lg:text-5xl">
-                Got Questions?
+                Questions? We've got answers.
               </h2>
             )}
             <p className="text-muted-foreground max-w-md leading-snug lg:mx-auto">
-              If you can't find what you're looking for,{" "}
+              Can't find what you need?{" "}
               <Link href="/contact" className="underline underline-offset-4">
-                get in touch
+                Talk to us
               </Link>
-              .
+              . We're happy to help.
             </p>
           </div>
 

@@ -133,7 +133,7 @@ export function ContactForm() {
                     const val = e.target.value;
                     field.onChange(val);
                   }}
-                  placeholder="me@company.com"
+                  placeholder="you@yourbrand.com"
                 />
               </FormControl>
 
@@ -147,7 +147,7 @@ export function ContactForm() {
           rules={{ required: false }}
           render={({ field }) => (
             <FormItem className="w-full">
-              <FormLabel>Company name </FormLabel>
+              <FormLabel>Brand name </FormLabel>
               <FormControl>
                 <Input
                   type="text"
@@ -156,7 +156,7 @@ export function ContactForm() {
                     const val = e.target.value;
                     field.onChange(val);
                   }}
-                  placeholder="Company name"
+                  placeholder="Your brand name"
                 />
               </FormControl>
 
@@ -171,18 +171,18 @@ export function ContactForm() {
           name="employees"
           render={({ field }) => {
             const options = [
-              { value: "1", label: "1" },
-              { value: "2-10", label: "2-10" },
-              { value: "11-50", label: "11-50" },
-              { value: "51-500", label: "51-500" },
+              { value: "1", label: "Just me" },
+              { value: "2-5", label: "2-5" },
+              { value: "6-10", label: "6-10" },
+              { value: "10+", label: "More than 10" },
             ];
             return (
               <FormItem className="w-full">
-                <FormLabel>Number of employees </FormLabel>
+                <FormLabel>Team size </FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="e.g. 11-50" />
+                      <SelectValue placeholder="e.g. 2-5" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -210,7 +210,7 @@ export function ContactForm() {
               <FormControl>
                 <Textarea
                   {...field}
-                  placeholder="Write your message"
+                  placeholder="Tell us about your brand and your DMs"
                   className="resize-none"
                 />
               </FormControl>
@@ -242,7 +242,7 @@ export function ContactForm() {
         />
         <div className="flex w-full items-center justify-end pt-3">
           <Button className="rounded-lg" size="sm">
-            {isExecuting ? "Submitting..." : "Submit"}
+            {isExecuting ? "Sending..." : "Send message"}
           </Button>
         </div>
       </form>

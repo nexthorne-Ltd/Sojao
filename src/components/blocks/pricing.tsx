@@ -11,58 +11,65 @@ import { cn } from "@/lib/utils";
 
 const plans = [
   {
-    name: "Free",
-    monthlyPrice: "$0",
-    yearlyPrice: "$0",
-    description: "Free for everyone",
+    name: "Starter",
+    monthlyPrice: "$29",
+    yearlyPrice: "$290",
+    description: "All 3 pillars, basic version",
     features: [
-      "Unlimited members",
-      "2 teams",
-      "500 issues",
-      "Slack and Github integrations",
+      "Comment-to-DM and story replies",
+      "Lead capture (email and phone)",
+      "Answers every DM from your store data",
+      "Product suggestions",
+      "Checkout links in the chat",
+      "Order status answers",
+      "Human handover",
     ],
   },
   {
-    name: "Startup",
-    monthlyPrice: "$8",
-    yearlyPrice: "$6",
+    name: "Growth",
+    monthlyPrice: "$79",
+    yearlyPrice: "$790",
+    description: "For brands ready to grow",
     features: [
-      "All free plan features and...",
-      "Mainline AI",
-      "Unlimited teams",
-      "Unlimited issues and file uploads",
-      "Mainline Insights",
-      "Admin roles",
+      "Everything in Starter, plus...",
+      "Broadcasts and drip sequences",
+      "Keyword triggers",
+      "Abandoned DM follow-up",
+      "Upsells",
+      "Delivery updates",
+      "Returns handling",
     ],
   },
   {
-    name: "Enterprise",
-    monthlyPrice: "$8",
-    yearlyPrice: "$6",
+    name: "Pro",
+    monthlyPrice: "$199",
+    yearlyPrice: "$1,990",
+    description: "Every tool Sojao has",
     features: [
-      "All free plan features and...",
-      "Mainline AI",
-      "Supermainline AGI",
-      "Free daily catered lunch",
-      "random HIPPA audits",
+      "Everything in Growth, plus...",
+      "Giveaways and contests",
+      "Growth tools (ref links, QR codes, website widget)",
+      "Click-to-DM ads",
+      "Tags and segments",
+      "Customer history",
+      "Review requests",
     ],
   },
 ];
 
 export const Pricing = ({ className }: { className?: string }) => {
-  const [isAnnual, setIsAnnual] = useState(true);
+  const [isAnnual, setIsAnnual] = useState(false);
 
   return (
     <section className={cn("py-28 lg:py-32", className)}>
       <div className="container max-w-5xl">
         <div className="space-y-4 text-center">
           <h2 className="text-2xl tracking-tight md:text-4xl lg:text-5xl">
-            Pricing
+            Simple pricing. Nothing to build.
           </h2>
           <p className="text-muted-foreground mx-auto max-w-xl leading-snug text-balance">
-            Use Mainline for free with your whole team. Upgrade to enable
-            unlimited issues, enhanced security controls, and additional
-            features.
+            Every plan includes marketing, sales and support. Pay yearly and
+            get 2 months free.
           </p>
         </div>
 
@@ -71,7 +78,7 @@ export const Pricing = ({ className }: { className?: string }) => {
             <Card
               key={plan.name}
               className={`${
-                plan.name === "Startup"
+                plan.name === "Growth"
                   ? "outline-primary origin-top outline-4"
                   : ""
               }`}
@@ -82,30 +89,23 @@ export const Pricing = ({ className }: { className?: string }) => {
                   <div className="space-y-1">
                     <div className="text-muted-foreground text-lg font-medium">
                       {isAnnual ? plan.yearlyPrice : plan.monthlyPrice}{" "}
-                      {plan.name !== "Free" && (
-                        <span className="text-muted-foreground">
-                          per user/
-                          {isAnnual ? "year" : "month"}
-                        </span>
-                      )}
+                      <span className="text-muted-foreground">
+                        per {isAnnual ? "year" : "month"}
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                {plan.name !== "Free" ? (
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={isAnnual}
-                      onCheckedChange={() => setIsAnnual(!isAnnual)}
-                      aria-label="Toggle annual billing"
-                    />
-                    <span className="text-sm font-medium">Billed annually</span>
-                  </div>
-                ) : (
-                  <span className="text-muted-foreground text-sm">
-                    {plan.description}
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={isAnnual}
+                    onCheckedChange={() => setIsAnnual(!isAnnual)}
+                    aria-label="Toggle annual billing"
+                  />
+                  <span className="text-sm font-medium">
+                    Billed yearly (2 months free)
                   </span>
-                )}
+                </div>
 
                 <div className="space-y-3">
                   {plan.features.map((feature) => (
@@ -121,14 +121,21 @@ export const Pricing = ({ className }: { className?: string }) => {
 
                 <Button
                   className="w-fit"
-                  variant={plan.name === "Startup" ? "default" : "outline"}
+                  variant={plan.name === "Growth" ? "default" : "outline"}
+                  asChild
                 >
-                  Get started
+                  <a href="/signup">Start free</a>
                 </Button>
               </CardContent>
             </Card>
           ))}
         </div>
+
+        <p className="text-muted-foreground mx-auto mt-8 max-w-2xl text-center text-sm text-balance">
+          Beta: early brands get the first 3 months free, then a 50% founding
+          discount. WhatsApp marketing message fees from Meta are billed at
+          cost.
+        </p>
       </div>
     </section>
   );

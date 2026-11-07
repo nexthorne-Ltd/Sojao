@@ -1,6 +1,7 @@
 import { Background } from "@/components/background";
 import { FAQ } from "@/components/blocks/faq";
 import { Features } from "@/components/blocks/features";
+import { GlobalStats } from "@/components/blocks/global-stats";
 import { Hero } from "@/components/blocks/hero";
 import { Logos } from "@/components/blocks/logos";
 import { Pricing } from "@/components/blocks/pricing";
@@ -17,6 +18,7 @@ export default function Home() {
         <ResourceAllocation />
       </Background>
       <Testimonials />
+      <GlobalStats />
       <Background variant="bottom">
         <Pricing />
         <FAQ />

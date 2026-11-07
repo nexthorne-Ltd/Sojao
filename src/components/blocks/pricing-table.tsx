@@ -23,23 +23,23 @@ interface FeatureSection {
 
 const pricingPlans = [
   {
-    name: "Free",
+    name: "Starter",
     button: {
-      text: "Get started",
+      text: "Start free",
       variant: "outline" as const,
     },
   },
   {
-    name: "Startup",
+    name: "Growth",
     button: {
-      text: "Get started",
+      text: "Start free",
       variant: "outline" as const,
     },
   },
   {
-    name: "Enterprise",
+    name: "Pro",
     button: {
-      text: "Get a demo",
+      text: "Join the beta",
       variant: "outline" as const,
     },
   },
@@ -47,69 +47,105 @@ const pricingPlans = [
 
 const comparisonFeatures: FeatureSection[] = [
   {
-    category: "Usage",
+    category: "Marketing",
     features: [
       {
-        name: "Members",
-        free: "Unlimited",
-        startup: "Unlimited",
-        enterprise: "Unlimited",
-      },
-      {
-        name: "Transactions",
-        free: "250",
-        startup: "Unlimited",
-        enterprise: "Unlimited",
-      },
-      {
-        name: "Teams",
-        free: "2",
-        startup: "Unlimited",
-        enterprise: "Unlimited",
-      },
-    ],
-  },
-  {
-    category: "Features",
-    features: [
-      {
-        name: "Reporting",
+        name: "Comment-to-DM",
         free: true,
         startup: true,
         enterprise: true,
       },
       {
-        name: "Analytics",
+        name: "Story replies",
         free: true,
         startup: true,
         enterprise: true,
       },
       {
-        name: "Import and export",
+        name: "Lead capture (email and phone)",
         free: true,
         startup: true,
         enterprise: true,
       },
       {
-        name: "Integrations",
-        free: true,
-        startup: true,
-        enterprise: true,
-      },
-      {
-        name: "Mainline AI",
+        name: "Broadcasts and campaigns",
         free: null,
         startup: true,
         enterprise: true,
       },
       {
-        name: "Admin roles",
+        name: "Drip sequences",
+        free: null,
+        startup: true,
+        enterprise: true,
+      },
+      {
+        name: "Keyword triggers",
+        free: null,
+        startup: true,
+        enterprise: true,
+      },
+      {
+        name: "Giveaways and contests",
         free: null,
         startup: null,
         enterprise: true,
       },
       {
-        name: "Audit log",
+        name: "Growth tools (ref links, QR codes, website widget)",
+        free: null,
+        startup: null,
+        enterprise: true,
+      },
+      {
+        name: "Click-to-DM ads",
+        free: null,
+        startup: null,
+        enterprise: true,
+      },
+      {
+        name: "Tags and segments",
+        free: null,
+        startup: null,
+        enterprise: true,
+      },
+    ],
+  },
+  {
+    category: "Sales",
+    features: [
+      {
+        name: "Answers every DM from your store data",
+        free: true,
+        startup: true,
+        enterprise: true,
+      },
+      {
+        name: "Product suggestions",
+        free: true,
+        startup: true,
+        enterprise: true,
+      },
+      {
+        name: "Checkout links in the chat",
+        free: true,
+        startup: true,
+        enterprise: true,
+      },
+      {
+        name: "Abandoned DM follow-up",
+        free: null,
+        startup: true,
+        enterprise: true,
+      },
+      {
+        name: "Upsells",
+        free: null,
+        startup: true,
+        enterprise: true,
+      },
+      {
+        name: "Customer history",
         free: null,
         startup: null,
         enterprise: true,
@@ -120,22 +156,51 @@ const comparisonFeatures: FeatureSection[] = [
     category: "Support",
     features: [
       {
-        name: "Priority Support",
+        name: "Order status answers",
         free: true,
         startup: true,
         enterprise: true,
       },
       {
-        name: "Account Manager",
+        name: "Human handover",
+        free: true,
+        startup: true,
+        enterprise: true,
+      },
+      {
+        name: "Delivery updates",
+        free: null,
+        startup: true,
+        enterprise: true,
+      },
+      {
+        name: "Returns handling",
+        free: null,
+        startup: true,
+        enterprise: true,
+      },
+      {
+        name: "Review requests",
         free: null,
         startup: null,
         enterprise: true,
       },
+    ],
+  },
+  {
+    category: "Limits",
+    features: [
       {
-        name: "Uptime SLA",
-        free: null,
-        startup: null,
-        enterprise: true,
+        name: "Conversations per month",
+        free: "[__]",
+        startup: "[__]",
+        enterprise: "[__]",
+      },
+      {
+        name: "Connected accounts",
+        free: "[__]",
+        startup: "[__]",
+        enterprise: "[__]",
       },
     ],
   },
@@ -161,7 +226,7 @@ const renderFeatureValue = (value: true | false | null | string) => {
 };
 
 export const PricingTable = () => {
-  const [selectedPlan, setSelectedPlan] = useState(1); // Default to Startup plan
+  const [selectedPlan, setSelectedPlan] = useState(1); // Default to Growth plan
 
   return (
     <section className="pb-28 lg:py-32">

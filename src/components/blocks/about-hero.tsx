@@ -2,20 +2,20 @@ import { DashedLine } from "@/components/dashed-line";
 
 const stats = [
   {
-    value: "$150M",
-    label: "Raised",
+    value: "24/7",
+    label: "Every DM answered",
   },
   {
-    value: "20K",
-    label: "Companies",
+    value: "3 in 1",
+    label: "Marketing, sales and support",
   },
   {
-    value: "1.3B",
-    label: "Monthly transactions",
+    value: "10 min",
+    label: "To set up",
   },
   {
-    value: "1.5K",
-    label: "Connections per minute",
+    value: "0",
+    label: "Flows to build",
   },
 ];
 
@@ -25,27 +25,22 @@ export function AboutHero() {
       <div className="container flex max-w-5xl flex-col justify-between gap-8 md:gap-20 lg:flex-row lg:items-center lg:gap-24 xl:gap-24">
         <div className="flex-[1.5]">
           <h1 className="text-3xl tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
-            Democratising quality software
+            You sleep. We handle your business.
           </h1>
 
           <p className="text-muted-foreground mt-5 text-2xl md:text-3xl lg:text-4xl">
-            Mainline is bringing modern software to life with AI magic.
+            “Sojao” means “go to sleep.” That&apos;s our promise to you.
           </p>
 
           <p className="text-muted-foreground mt-8 hidden max-w-lg space-y-6 text-lg text-balance md:block lg:mt-12">
-            At Mainline, we are dedicated to transforming the way teams plan,
-            execute, and deliver projects. Our mission is to provide our
-            customers with an unbeatable edge over delays, inefficiencies, and
-            disorganisation through actionable insights and seamless
-            collaboration. We’ll stop at nothing to give you the tools you need
-            to get every project across the finish line.
+            Sojao AI is a product of Nexthorne. We build it for small brands
+            that sell on Instagram, Facebook Messenger and WhatsApp.
             <br />
             <br />
-            We’re customer-obsessed — investing the time to understand every
-            aspect of your workflow so that we can help you operate better than
-            ever before. We’re all in this together because your success is our
-            success. In our history as a company, we’ve never lost a customer,
-            because when your projects succeed, so do we.
+            Most owners answer DMs themselves. They get the same questions every
+            day, and they lose sales at night. Sojao fixes that. It brings
+            customers in, sells to them, and looks after them after the sale, so
+            you can finally switch off.
           </p>
         </div>
 

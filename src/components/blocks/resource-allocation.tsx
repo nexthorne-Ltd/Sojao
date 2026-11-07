@@ -6,13 +6,13 @@ import { cn } from "@/lib/utils";
 
 const topItems = [
   {
-    title: "Reusable issue templates.",
+    title: "Answers from your real store.",
     description:
-      "Draft lightning-fast documents with our Smart Instructions and Templates.",
+      "Price, size, stock, shipping and returns. Sojao knows your store, so every answer is right.",
     images: [
       {
         src: "/resource-allocation/templates.webp",
-        alt: "Issue template interface",
+        alt: "Sojao answering a customer question",
         width: 495,
         height: 186,
       },
@@ -22,8 +22,9 @@ const topItems = [
     fade: [""],
   },
   {
-    title: "Simplify your stack.",
-    description: "No more Confluence, SharePoint, or Microsoft Word.",
+    title: "Replace three tools with one.",
+    description:
+      "No more ManyChat for marketing, a VA for sales and a helpdesk for support.",
     images: [
       { src: "/logos/jira.svg", alt: "Jira logo", width: 48, height: 48 },
       { src: "/logos/excel.svg", alt: "Excel logo", width: 48, height: 48 },
@@ -62,13 +63,13 @@ const topItems = [
 
 const bottomItems = [
   {
-    title: "Graveyard it.",
+    title: "Abandoned DM follow-up.",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do.",
+      "Someone asked, then went quiet? Sojao checks back in and brings the sale home.",
     images: [
       {
         src: "/resource-allocation/graveyard.webp",
-        alt: "Graveyard interface",
+        alt: "Abandoned DM follow-up",
         width: 305,
         height: 280,
       },
@@ -78,13 +79,13 @@ const bottomItems = [
     fade: ["bottom"],
   },
   {
-    title: "Task discussions.",
+    title: "Human handover.",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod.",
+      "Not sure? Sojao passes the chat to you, then learns from your reply.",
     images: [
       {
         src: "/resource-allocation/discussions.webp",
-        alt: "Task discussions interface",
+        alt: "Chat handed over to the owner",
         width: 320,
         height: 103,
       },
@@ -94,13 +95,13 @@ const bottomItems = [
     fade: [""],
   },
   {
-    title: "Notifications.",
+    title: "Order updates.",
     description:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod.",
+      "Confirmations, delivery updates and “where is my order?” answers from live Shopify data.",
     images: [
       {
         src: "/resource-allocation/notifications.webp",
-        alt: "Notifications interface",
+        alt: "Order update messages",
         width: 305,
         height: 280,
       },
@@ -119,7 +120,7 @@ export const ResourceAllocation = () => {
     >
       <div className="">
         <h2 className="container text-center text-3xl tracking-tight text-balance sm:text-4xl md:text-5xl lg:text-6xl">
-          Mainline your resource allocation and execution
+          Everything your DMs need. Nothing to build.
         </h2>
 
         <div className="mt-8 md:mt-12 lg:mt-20">
