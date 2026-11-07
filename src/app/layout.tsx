@@ -1,4 +1,3 @@
-import { Fredoka, Inter } from "next/font/google";
 import localFont from "next/font/local";
 
 import type { Metadata } from "next";
@@ -55,15 +54,22 @@ const dmSans = localFont({
   display: "swap",
 });
 
-const inter = Inter({
-  subsets: ["latin"],
+// Inter + Fredoka are self-hosted (variable woff2, latin) instead of
+// next/font/google so builds never depend on fetching Google Fonts.
+const inter = localFont({
+  src: "../../fonts/inter/Inter-Variable-latin.woff2",
+  weight: "100 900",
+  style: "normal",
   variable: "--font-inter",
+  display: "swap",
 });
 
-const fredoka = Fredoka({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
+const fredoka = localFont({
+  src: "../../fonts/fredoka/Fredoka-Variable-latin.woff2",
+  weight: "300 700",
+  style: "normal",
   variable: "--font-fredoka",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
