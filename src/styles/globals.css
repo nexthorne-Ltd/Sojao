@@ -528,13 +528,40 @@ body {
     animation: mascot-float 4s ease-in-out infinite;
   }
   .mascot-eye {
+    transform-box: fill-box;
     transform-origin: center;
     animation: mascot-blink 5s infinite;
+  }
+  .mascot-eye-slow {
+    animation: mascot-blink 6.5s infinite 0.6s;
+  }
+  .mascot-eye-fast {
+    animation: mascot-blink-double 3.2s infinite;
+  }
+  .mascot-twinkle {
+    animation: mascot-twinkle 1.6s ease-in-out infinite;
   }
   .mascot-dot {
     animation: mascot-dot 1.2s ease-in-out infinite;
   }
+  .mascot-breathe {
+    transform-origin: 50% 60%;
+    animation: mascot-breathe 4s ease-in-out infinite;
+  }
+  .mascot-mouth {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: mascot-mouth 4s ease-in-out infinite;
+  }
+  .mascot-z {
+    opacity: 0;
+    animation: mascot-z 2.4s ease-out infinite;
+  }
   @media (prefers-reduced-motion: reduce) {
+    .mascot-breathe,
+    .mascot-mouth,
+    .mascot-z,
+    .mascot-twinkle,
     .mascot-blob,
     .mascot-float,
     .mascot-eye,
@@ -579,6 +606,63 @@ body {
   }
   95% {
     transform: scaleY(0.1);
+  }
+}
+@keyframes mascot-blink-double {
+  0%,
+  80%,
+  88%,
+  100% {
+    transform: scaleY(1);
+  }
+  84%,
+  92% {
+    transform: scaleY(0.1);
+  }
+  96% {
+    transform: scaleY(1);
+  }
+}
+@keyframes mascot-twinkle {
+  0%,
+  100% {
+    transform: scale(0.7) rotate(0deg);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.15) rotate(25deg);
+    opacity: 1;
+  }
+}
+@keyframes mascot-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.035);
+  }
+}
+@keyframes mascot-mouth {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(1.25, 1.9);
+  }
+}
+@keyframes mascot-z {
+  0% {
+    opacity: 0;
+    transform: translate(0, 6px) scale(0.6) rotate(-10deg);
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(8px, -14px) scale(1.1) rotate(8deg);
   }
 }
 @keyframes mascot-dot {
