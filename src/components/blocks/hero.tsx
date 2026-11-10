@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import {
   ArrowRight,
   Bot,
@@ -38,7 +40,7 @@ export const Hero = () => {
               <span className="bg-brand absolute inline-flex size-full animate-ping rounded-full opacity-60" />
               <span className="bg-brand relative inline-flex size-2 rounded-full" />
             </span>
-            Now in beta · AI sales assistant, 24/7
+            AI sales assistant · working 24/7
           </span>
 
           <h1 className="text-foreground text-4xl leading-[1.05] font-bold tracking-tight text-balance md:text-6xl xl:text-7xl">
@@ -65,8 +67,9 @@ export const Hero = () => {
           </h1>
 
           <p className="text-muted-foreground mx-auto mt-6 max-w-xl text-lg text-balance md:text-xl lg:mx-0">
-            Never miss a sale in your DMs again. Sojao answers every customer
-            and helps close orders like your best salesperson, 24/7.
+            Never miss a sale in your DMs again. Sojao answers every customer,
+            books appointments and closes orders like your best salesperson,
+            24/7.
           </p>
 
           {/* CTA */}
@@ -117,6 +120,17 @@ export const Hero = () => {
         </div>
 
         <HeroScene className="shadow-2xl ring-1 ring-white/10" />
+      </div>
+
+      <div className="mt-16 max-lg:ml-6 max-lg:h-[550px] max-lg:overflow-hidden md:mt-20 lg:container lg:mt-24">
+        <div className="relative h-[793px] w-full">
+          <Image
+            src="/hero.webp"
+            alt="Sojao AI dashboard"
+            fill
+            className="rounded-2xl object-cover object-left-top shadow-lg max-lg:rounded-tr-none"
+          />
+        </div>
       </div>
     </section>
   );

@@ -1,19 +1,9 @@
 import React from "react";
 
-import type { Metadata } from "next";
-
 import { Background } from "@/components/background";
 import { FAQ } from "@/components/blocks/faq";
 import { Testimonials } from "@/components/blocks/testimonials";
 import { DashedLine } from "@/components/dashed-line";
-import { pageMetadata } from "@/lib/metadata";
-
-export const metadata: Metadata = pageMetadata({
-  title: "FAQ",
-  description:
-    "Answers to common questions about Sojao AI and the beta.",
-  path: "/faq",
-});
 
 const Page = () => {
   return (

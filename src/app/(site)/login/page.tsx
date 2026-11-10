@@ -46,9 +46,9 @@ const Login = () => {
                         Remember me
                       </label>
                     </div>
-                    <Link href="/contact" className="text-primary text-sm font-medium">
-                      Forgot password?
-                    </Link>
+                    <a href="#" className="text-primary text-sm font-medium">
+                      Forgot password
+                    </a>
                   </div>
                   <Button className="mt-2 w-full" asChild>
                     <Link href="/dashboard">Log in</Link>

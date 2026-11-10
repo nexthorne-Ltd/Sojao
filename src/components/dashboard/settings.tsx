@@ -104,7 +104,7 @@ function StoreTab() {
             <Store className="size-5" />
           </span>
           <div className="flex-1">
-            <p className="font-medium">yourbrand.myshopify.com</p>
+            <p className="font-medium">[yourbrand].myshopify.com</p>
             <p className="text-muted-foreground text-xs">Last synced 4 minutes ago · 6 products · 7 orders</p>
           </div>
           <Badge tone="good">Connected</Badge>
@@ -161,8 +161,7 @@ function TrainTab() {
           <Field label="About your brand">
             <textarea
               rows={4}
-              defaultValue=""
-              placeholder="Describe what you sell, who it's for and what makes it special."
+              defaultValue="[Describe what you sell, who it's for and what makes it special.]"
               className={cn(inputCls, "h-auto py-2")}
             />
           </Field>

@@ -16,27 +16,17 @@ export function Logo({ className }: { className?: string }) {
         className,
       )}
     >
-      <Glyph text="s" className="text-logo-text" />
+      <span aria-hidden className="text-logo-text">
+        s
+      </span>
       <SleepyFace />
-      <Glyph text="jao" className="text-logo-text" />
-      <Glyph text="ai" className="text-brand ml-[0.22em]" />
-      <span className="sr-only">Sojao AI</span>
+      <span aria-hidden className="text-logo-text">
+        jao
+      </span>
+      <span aria-hidden className="text-brand ml-[0.22em]">
+        ai
+      </span>
     </span>
-  );
-}
-
-/**
- * Visible letters are drawn with CSS `content` (not real text), so copy/paste,
- * search engines and screen readers get "Sojao AI" instead of "sjaoai" (the
- * sleepy face stands in for the first "o").
- */
-function Glyph({ text, className }: { text: string; className: string }) {
-  return (
-    <span
-      aria-hidden
-      data-glyph={text}
-      className={cn("before:content-[attr(data-glyph)]", className)}
-    />
   );
 }
 

@@ -5,7 +5,6 @@ import type { Metadata } from "next";
 import { StyleGlideProvider } from "@/components/styleglide-provider";
 import { ThemePicker } from "@/components/theme-picker";
 import { ThemeProvider } from "@/components/theme-provider";
-import { siteConfig } from "@/lib/site-config";
 import "@/styles/globals.css";
 
 const dmSans = localFont({
@@ -74,42 +73,60 @@ const fredoka = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
   title: {
-    default: siteConfig.title,
+    default: "Sojao AI – Your business sleeps. Your customers don't.",
     template: "%s | Sojao AI",
   },
-  description: siteConfig.description,
-  applicationName: siteConfig.name,
+  description:
+    "Never miss a sale in your DMs again. Sojao answers every customer on Instagram, Messenger and WhatsApp like your best salesperson, 24/7.",
   keywords: [
     "Instagram DM automation",
     "AI sales agent",
     "WhatsApp AI",
     "Facebook Messenger AI",
     "comment to DM",
+    "ManyChat alternative",
     "Shopify AI chat",
     "small business customer support",
   ],
-  authors: [{ name: siteConfig.legalName }],
-  creator: siteConfig.legalName,
-  publisher: siteConfig.legalName,
+  authors: [{ name: "Nexthorne" }],
+  creator: "Nexthorne",
+  publisher: "Nexthorne",
   robots: {
     index: true,
     follow: true,
   },
-  manifest: "/manifest.webmanifest",
-  // Favicon and Open Graph image come from src/app/icon.svg,
-  // src/app/apple-icon.tsx and src/app/opengraph-image.tsx.
+  icons: {
+    icon: [
+      { url: "/favicon/favicon.ico", sizes: "48x48" },
+      { url: "/favicon/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+      { url: "/favicon/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon/favicon.ico" },
+    ],
+    apple: [{ url: "/favicon/apple-touch-icon.png", sizes: "180x180" }],
+    shortcut: [{ url: "/favicon/favicon.ico" }],
+  },
   openGraph: {
-    type: "website",
-    siteName: siteConfig.name,
-    title: siteConfig.title,
-    description: siteConfig.description,
+    title: "Sojao AI – Your business sleeps. Your customers don't.",
+    description:
+      "Never miss a sale in your DMs again. Sojao answers every customer like your best salesperson, 24/7.",
+    siteName: "Sojao AI",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Sojao AI – Your business sleeps. Your customers don't.",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: siteConfig.title,
-    description: siteConfig.description,
+    title: "Sojao AI – Your business sleeps. Your customers don't.",
+    description:
+      "Never miss a sale in your DMs again. Sojao answers every customer like your best salesperson, 24/7.",
+    images: ["/og-image.jpg"],
   },
 };
 

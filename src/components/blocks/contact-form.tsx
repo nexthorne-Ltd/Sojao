@@ -1,6 +1,4 @@
 "use client";
-import Link from "next/link";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check } from "lucide-react";
 import { motion } from "motion/react";
@@ -32,7 +30,7 @@ import { formSchema } from "@/lib/form-schema";
 
 type Schema = z.infer<typeof formSchema>;
 
-export function ContactForm({ fallbackEmail }: { fallbackEmail?: string }) {
+export function ContactForm() {
   const form = useForm<Schema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -46,14 +44,18 @@ export function ContactForm({ fallbackEmail }: { fallbackEmail?: string }) {
   });
   const formAction = useAction(serverAction, {
     onSuccess: () => {
+      // TODO: show success message
       form.reset();
+    },
+    onError: () => {
+      // TODO: show error message
     },
   });
   const handleSubmit = form.handleSubmit(async (data: Schema) => {
     formAction.execute(data);
   });
 
-  const { isExecuting, hasSucceeded, hasErrored } = formAction;
+  const { isExecuting, hasSucceeded } = formAction;
   if (hasSucceeded) {
     return (
       <div className="w-full gap-2 rounded-md border p-2 sm:p-5 md:p-8">
@@ -80,7 +82,7 @@ export function ContactForm({ fallbackEmail }: { fallbackEmail?: string }) {
             Thank you
           </h2>
           <p className="text-muted-foreground text-center text-lg text-pretty">
-            Your message was sent. We&apos;ll get back to you soon.
+            Form submitted successfully, we will get back to you soon
           </p>
         </motion.div>
       </div>
@@ -125,7 +127,7 @@ export function ContactForm({ fallbackEmail }: { fallbackEmail?: string }) {
               <FormLabel>Email address * </FormLabel>
               <FormControl>
                 <Input
-                  type="email"
+                  type="text"
                   value={field.value}
                   onChange={(e) => {
                     const val = e.target.value;
@@ -231,41 +233,15 @@ export function ContactForm({ fallbackEmail }: { fallbackEmail?: string }) {
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel>
-                  I agree to the{" "}
-                  <Link href="/terms" className="underline underline-offset-4">
-                    Terms of Service
-                  </Link>{" "}
-                  and{" "}
-                  <Link href="/privacy" className="underline underline-offset-4">
-                    Privacy Policy
-                  </Link>
-                </FormLabel>
+                <FormLabel>I agree to the terms and conditions</FormLabel>
 
                 <FormMessage />
               </div>
             </FormItem>
           )}
         />
-        {hasErrored && (
-          <p role="alert" className="text-destructive text-sm">
-            Sorry, your message could not be sent right now.
-            {fallbackEmail ? (
-              <>
-                {" "}
-                Please email us at{" "}
-                <a href={`mailto:${fallbackEmail}`} className="underline underline-offset-4">
-                  {fallbackEmail}
-                </a>
-                .
-              </>
-            ) : (
-              " Please try again later."
-            )}
-          </p>
-        )}
         <div className="flex w-full items-center justify-end pt-3">
-          <Button className="rounded-lg" size="sm" disabled={isExecuting}>
+          <Button className="rounded-lg" size="sm">
             {isExecuting ? "Sending..." : "Send message"}
           </Button>
         </div>

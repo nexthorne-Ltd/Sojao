@@ -187,8 +187,23 @@ const comparisonFeatures: FeatureSection[] = [
       },
     ],
   },
-  // OWNER: add a "Limits" category (conversations per month, connected
-  // accounts) once the real plan limits are decided.
+  {
+    category: "Limits",
+    features: [
+      {
+        name: "Conversations per month",
+        free: "[__]",
+        startup: "[__]",
+        enterprise: "[__]",
+      },
+      {
+        name: "Connected accounts",
+        free: "[__]",
+        startup: "[__]",
+        enterprise: "[__]",
+      },
+    ],
+  },
 ];
 
 const renderFeatureValue = (value: true | false | null | string) => {

@@ -5,7 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Github } from "lucide-react";
 
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 const ITEMS = [
   {
     label: "Features",
-    href: "/#feature-modern-teams",
+    href: "#features",
     dropdownItems: [
       {
         title: "Marketing, sales and support",
@@ -120,11 +120,17 @@ export const Navbar = () => {
               <span className="relative z-10">Log in</span>
             </Button>
           </Link>
+          <a
+            href="#"
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Github className="size-4" />
+            <span className="sr-only">GitHub</span>
+          </a>
 
           {/* Hamburger Menu Button (Mobile Only) */}
           <button
             className="text-muted-foreground relative flex size-8 lg:hidden"
-            aria-expanded={isMenuOpen}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             <span className="sr-only">Open main menu</span>

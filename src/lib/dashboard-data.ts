@@ -7,8 +7,8 @@ export type Channel = "instagram" | "messenger" | "whatsapp";
 export type Pillar = "Marketing" | "Sales" | "Support";
 
 export const brand = {
-  name: "Your brand",
-  owner: "Owner",
+  name: "[Your brand]",
+  owner: "[Owner name]",
   plan: "Growth",
   beta: true,
 };
