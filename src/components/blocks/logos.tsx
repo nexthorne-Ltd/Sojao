@@ -1,170 +1,30 @@
-import Image from "next/image";
 import Link from "next/link";
 
-import Marquee from "react-fast-marquee";
+import { ArrowRight } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
-type Company = {
-  name: string;
-  logo: string;
-  width: number;
-  height: number;
-  href: string;
-};
-
+/**
+ * Social-proof slot. No customer logos are shown until real beta brands
+ * agree to be featured.
+ */
 export const Logos = () => {
-  const topRowCompanies = [
-    {
-      name: "[Beta brand]",
-      logo: "/logos/mercury.svg",
-      width: 143,
-      height: 26,
-      href: "#",
-    },
-    {
-      name: "[Beta brand]",
-      logo: "/logos/watershed.svg",
-      width: 154,
-      height: 31,
-      href: "#",
-    },
-    {
-      name: "[Beta brand]",
-      logo: "/logos/retool.svg",
-      width: 113,
-      height: 22,
-      href: "#",
-    },
-    {
-      name: "[Beta brand]",
-      logo: "/logos/descript.svg",
-      width: 112,
-      height: 27,
-      href: "#",
-    },
-  ];
-
-  const bottomRowCompanies = [
-    {
-      name: "[Beta brand]",
-      logo: "/logos/perplexity.svg",
-      width: 141,
-      height: 32,
-      href: "#",
-    },
-    {
-      name: "[Beta brand]",
-      logo: "/logos/monzo.svg",
-      width: 104,
-      height: 18,
-      href: "#",
-    },
-    {
-      name: "[Beta brand]",
-      logo: "/logos/ramp.svg",
-      width: 105,
-      height: 28,
-      href: "#",
-    },
-    {
-      name: "[Beta brand]",
-      logo: "/logos/raycast.svg",
-      width: 128,
-      height: 33,
-      href: "#",
-    },
-    {
-      name: "[Beta brand]",
-      logo: "/logos/arc.svg",
-      width: 90,
-      height: 28,
-      href: "#",
-    },
-  ];
-
   return (
-    <section className="pb-28 lg:pb-32 overflow-hidden">
-      <div className="container space-y-10 lg:space-y-16">
-        <div className="text-center">
-          <h2 className="mb-4 text-xl text-balance md:text-2xl lg:text-3xl">
-            Built for Instagram-first brands.
-            <br className="max-md:hidden" />
-            <span className="text-muted-foreground">
-              Fashion, beauty, accessories and D2C brands. [Beta brand logos go
-              here]
-            </span>
-          </h2>
-        </div>
-
-        <div className="flex w-full flex-col items-center gap-8">
-          {/* Top row - 4 logos */}
-          <LogoRow companies={topRowCompanies} gridClassName="grid-cols-4" />
-
-          {/* Bottom row - 5 logos */}
-          <LogoRow
-            companies={bottomRowCompanies}
-            gridClassName="grid-cols-5"
-            direction="right"
-          />
-        </div>
+    <section className="pb-28 lg:pb-32">
+      <div className="container text-center">
+        <h2 className="mb-4 text-xl text-balance md:text-2xl lg:text-3xl">
+          Built for Instagram-first brands.
+        </h2>
+        <p className="text-muted-foreground mx-auto max-w-xl text-balance">
+          Now onboarding our first beta brands – fashion, beauty, accessories
+          and D2C.
+        </p>
+        <Button variant="outline" className="mt-6 shadow-md" asChild>
+          <Link href="/signup">
+            Join the beta <ArrowRight className="size-4" />
+          </Link>
+        </Button>
       </div>
     </section>
-  );
-};
-
-type LogoRowProps = {
-  companies: Company[];
-  gridClassName: string;
-  direction?: "left" | "right";
-};
-
-const LogoRow = ({ companies, gridClassName, direction }: LogoRowProps) => {
-  return (
-    <>
-      {/* Desktop static version */}
-      <div className="hidden md:block">
-        <div
-          className={cn(
-            "grid items-center justify-items-center gap-x-20 lg:gap-x-28",
-            gridClassName,
-          )}
-        >
-          {companies.map((company, index) => (
-            <Link href={company.href} target="_blank" key={index}>
-              <Image
-                src={company.logo}
-                alt={`${company.name} logo`}
-                width={company.width}
-                height={company.height}
-                className="dark:opacity/100 object-contain opacity-50 transition-opacity hover:opacity-70 dark:invert"
-              />
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Mobile marquee version */}
-      <div className="md:hidden">
-        <Marquee direction={direction} pauseOnHover>
-          {companies.map((company, index) => (
-            <Link
-              href={company.href}
-              target="_blank"
-              key={index}
-              className="mx-8 inline-block transition-opacity hover:opacity-70"
-            >
-              <Image
-                src={company.logo}
-                alt={`${company.name} logo`}
-                width={company.width}
-                height={company.height}
-                className="object-contain"
-              />
-            </Link>
-          ))}
-        </Marquee>
-      </div>
-    </>
   );
 };

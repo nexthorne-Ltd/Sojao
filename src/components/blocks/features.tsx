@@ -1,30 +1,34 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import { ChevronRight } from "lucide-react";
 
 import { DashedLine } from "../dashed-line";
 
+import {
+  MarketingMock,
+  SalesMock,
+  SupportMock,
+} from "@/components/blocks/chat-illustrations";
 import { Card, CardContent } from "@/components/ui/card";
 
 const items = [
   {
     title: "Marketing: bring customers in",
-    image: "/features/triage-card.svg",
+    visual: <MarketingMock />,
   },
   {
     title: "Sales: sell to them in the chat",
-    image: "/features/cycle-card.svg",
+    visual: <SalesMock />,
   },
   {
     title: "Support: look after them after the sale",
-    image: "/features/overview-card.svg",
+    visual: <SupportMock />,
   },
 ];
 
 export const Features = () => {
   return (
-    <section id="feature-modern-teams" className="pb-28 lg:pb-32">
+    <section id="feature-modern-teams" className="scroll-mt-24 pb-28 lg:pb-32">
       <div className="container">
         {/* Top dashed line with text */}
         <div className="relative flex items-center justify-center">
@@ -52,18 +56,10 @@ export const Features = () => {
             {items.map((item, i) => (
               <div key={i} className="flex flex-1 max-md:flex-col">
                 <div className="flex-1 p-4 pe-0! md:p-6">
-                  <div className="relative aspect-[1.28/1] overflow-hidden">
-                    <Image
-                      src={item.image}
-                      alt={`${item.title} interface`}
-                      fill
-                      className="object-cover object-left-top ps-4 pt-2"
-                    />
-                    <div className="from-background absolute inset-0 z-10 bg-linear-to-t via-transparent to-transparent" />
-                  </div>
+                  <div className="pe-4 md:pe-6">{item.visual}</div>
 
                   <Link
-                    href="#"
+                    href="/#resource-allocation"
                     className={
                       "group flex items-center justify-between gap-4 pe-4 pt-4 md:pe-6 md:pt-6"
                     }

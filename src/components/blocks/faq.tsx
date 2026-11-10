@@ -33,6 +33,11 @@ const categories = [
     title: "Pricing and the beta",
     questions: [
       {
+        question: "Is Sojao available now?",
+        answer:
+          "Sojao is in beta. We're onboarding a small group of early brands first, so some features are still being built and improved. Join the beta and we'll get you set up.",
+      },
+      {
         question: "Can I try Sojao for free?",
         answer:
           "Yes. Early brands in our beta get the first 3 months free, then a 50% founding discount.",

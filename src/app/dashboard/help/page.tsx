@@ -92,7 +92,7 @@ export default function HelpPage() {
           )}
         </Panel>
 
-        <Panel title="Talk to us" description="Questions, bugs or ideas. A real person will reply. [Reply time]">
+        <Panel title="Talk to us" description="Questions, bugs or ideas. A real person will reply.">
           {sent ? (
             <div className="flex flex-col items-center gap-2 py-8 text-center">
               <span className="bg-brand/15 flex size-12 items-center justify-center rounded-full">

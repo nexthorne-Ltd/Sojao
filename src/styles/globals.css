@@ -676,3 +676,403 @@ body {
     transform: translateY(-2px);
   }
 }
+
+/* Hero mascot (layered face): write → think → write → happy */
+@layer components {
+  .hm-head,
+  .hm-head-inner {
+    transform-origin: 52.1% 39.9%;
+  }
+  .hm-hand,
+  .hm-hand-inner {
+    transform-origin: 15.6% 55.4%;
+  }
+  .hm-head,
+  .hm-hand {
+    transition: transform 0.8s cubic-bezier(0.34, 1.45, 0.64, 1);
+  }
+  .hm-stage {
+    transform-origin: 50% 100%;
+  }
+
+  /* poses */
+  .hm-stage[data-pose="write"] .hm-head {
+    transform: rotate(2.5deg);
+  }
+  .hm-stage[data-pose="think"] .hm-head {
+    transform: rotate(-4deg) translateY(-0.6%);
+  }
+  .hm-stage[data-pose="think"] .hm-hand {
+    transform: rotate(9deg);
+  }
+  .hm-stage[data-pose="happy"] .hm-hand {
+    transform: rotate(-7deg);
+  }
+
+  .hm-stage[data-pose="write"] .hm-head-inner {
+    animation: hm-head-bob 1.1s ease-in-out infinite;
+  }
+  .hm-stage[data-pose="happy"] .hm-head-inner {
+    animation: hm-nod 0.7s ease-in-out 2;
+  }
+  .hm-stage[data-pose="write"] .hm-hand-inner {
+    animation: hm-scribble 0.42s ease-in-out infinite alternate;
+  }
+  .hm-stage[data-pose="think"] .hm-hand-inner {
+    animation: hm-tap 1.4s ease-in-out infinite;
+  }
+  .hm-stage[data-pose="happy"] .hm-hand-inner {
+    animation: hm-wave 0.45s ease-in-out 4 alternate;
+  }
+  .hm-stage[data-pose="happy"] {
+    animation: hm-hop 0.7s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+  }
+
+  /* eyelids: blink, half-closed while thinking, content squint when happy */
+  .hm-lid {
+    --lid: 0;
+    transform-box: fill-box;
+    transform-origin: 50% 0;
+    transform: scaleY(var(--lid));
+    animation: hm-blink 4.2s infinite 1s;
+  }
+  .hm-stage[data-pose="think"] .hm-lid {
+    --lid: 0.3;
+  }
+  .hm-stage[data-pose="happy"] .hm-lid {
+    --lid: 0.18;
+  }
+
+  /* tablet */
+  .hm-screen {
+    opacity: 0.08;
+    transition: opacity 0.5s;
+  }
+  .hm-stage[data-pose="write"] .hm-screen {
+    opacity: 0.18;
+  }
+  .hm-note {
+    stroke-width: 3.2;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: hm-write 1.3s ease-out forwards;
+    transition: opacity 0.4s;
+  }
+  .hm-stage[data-pose="think"] .hm-note {
+    animation-play-state: paused;
+  }
+  .hm-stage[data-pose="happy"] .hm-note {
+    opacity: 0.3;
+  }
+  .hm-check {
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+    transform: scale(0.3);
+    transition:
+      opacity 0.25s,
+      transform 0.45s cubic-bezier(0.34, 1.8, 0.64, 1);
+  }
+  .hm-stage[data-pose="happy"] .hm-check {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* bubbles & sparkles */
+  .hm-thought {
+    opacity: 0;
+    transform: translateY(6px) scale(0.85);
+    transform-origin: 0 100%;
+    transition:
+      opacity 0.35s,
+      transform 0.45s cubic-bezier(0.34, 1.6, 0.64, 1);
+  }
+  [data-pose="think"] > .hm-thought {
+    opacity: 1;
+    transform: none;
+  }
+  .hm-sparkles > span {
+    opacity: 0;
+  }
+  [data-pose="happy"] > .hm-sparkles > span {
+    animation: hm-sparkle 1.3s ease-out 2;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hm-stage,
+    .hm-head-inner,
+    .hm-hand-inner,
+    .hm-lid,
+    .hm-sparkles > span {
+      animation: none !important;
+    }
+    .hm-note {
+      animation: none;
+      stroke-dashoffset: 0;
+    }
+  }
+}
+
+@keyframes hm-head-bob {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(0.8deg) translateY(0.3%);
+  }
+}
+@keyframes hm-nod {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  30% {
+    transform: rotate(3deg) translateY(0.8%);
+  }
+  65% {
+    transform: rotate(-1.5deg);
+  }
+}
+@keyframes hm-scribble {
+  0% {
+    transform: rotate(-2.5deg) translate(0, 0);
+  }
+  50% {
+    transform: rotate(1deg) translate(0.4%, 0.2%);
+  }
+  100% {
+    transform: rotate(2.5deg) translate(-0.2%, 0.4%);
+  }
+}
+@keyframes hm-tap {
+  0%,
+  60%,
+  100% {
+    transform: rotate(0deg);
+  }
+  70% {
+    transform: rotate(2.5deg);
+  }
+  80% {
+    transform: rotate(0deg);
+  }
+  90% {
+    transform: rotate(2.5deg);
+  }
+}
+@keyframes hm-wave {
+  from {
+    transform: rotate(-4deg);
+  }
+  to {
+    transform: rotate(5deg);
+  }
+}
+@keyframes hm-hop {
+  0% {
+    transform: translateY(0) scale(1, 1);
+  }
+  20% {
+    transform: translateY(0) scale(1.02, 0.97);
+  }
+  50% {
+    transform: translateY(-4%) scale(0.99, 1.02);
+  }
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+}
+@keyframes hm-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(var(--lid));
+  }
+  96% {
+    transform: scaleY(1);
+  }
+}
+@keyframes hm-write {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes hm-sparkle {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) rotate(0deg);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.15) rotate(40deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.6) rotate(90deg) translateY(-8px);
+  }
+}
+
+/* Hero scene (vector mascot at desk) */
+@layer components {
+  .hs * {
+    transform-box: view-box;
+  }
+  .hs-sleeve {
+    fill: none;
+    stroke: #121826;
+    stroke-width: 34;
+    stroke-linecap: round;
+  }
+  .hs-char {
+    animation: hs-breathe 3.2s ease-in-out infinite;
+  }
+  .hs-head {
+    transform-origin: 300px 290px;
+    animation: hs-head 4s ease-in-out infinite;
+  }
+  .hs-ant-l {
+    transform-origin: 270px 120px;
+    animation: hs-ant 1.8s ease-in-out infinite;
+  }
+  .hs-ant-r {
+    transform-origin: 330px 120px;
+    animation: hs-ant 1.8s ease-in-out infinite reverse;
+  }
+  .hs-eye-l {
+    transform-origin: 265px 214px;
+    animation: hs-blink 4.6s infinite;
+  }
+  .hs-eye-r {
+    transform-origin: 335px 214px;
+    animation: hs-blink 4.6s infinite;
+    transition: opacity 0.15s;
+  }
+  .hs-wink {
+    fill: none;
+    stroke: #1e2a55;
+    stroke-width: 5;
+    stroke-linecap: round;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .hs[data-state="point"] .hs-eye-r {
+    opacity: 0;
+  }
+  .hs[data-state="point"] .hs-wink {
+    opacity: 1;
+  }
+  .hs-brow-r {
+    transform-origin: 336px 180px;
+    transition: transform 0.3s;
+  }
+  .hs[data-state="point"] .hs-brow-r {
+    transform: translateY(4px);
+  }
+  .hs[data-state="point"] .hs-head {
+    animation: hs-tilt 0.6s ease-out forwards;
+  }
+  .hs-led {
+    fill: #22d3ee;
+    animation: hs-led 2s ease-in-out infinite;
+  }
+
+  /* typing hands */
+  .hs-hand-l {
+    transform-origin: 318px 402px;
+    animation: hs-tap 0.28s ease-in-out infinite alternate;
+  }
+  .hs-hand-r {
+    transform-origin: 454px 402px;
+    animation: hs-tap 0.28s ease-in-out infinite alternate-reverse;
+  }
+  .hs[data-typing] .hs-hand {
+    animation-duration: 0.16s;
+  }
+  .hs-screen {
+    opacity: 0.25;
+    transition: opacity 0.4s;
+  }
+  .hs[data-typing] .hs-screen {
+    opacity: 0.6;
+  }
+
+  /* point at the booking card */
+  .hs-arm-type {
+    transition: opacity 0.2s;
+  }
+  .hs-arm-point {
+    opacity: 0;
+    transform-origin: 368px 322px;
+    transform: rotate(55deg);
+    transition:
+      opacity 0.2s,
+      transform 0.55s cubic-bezier(0.34, 1.6, 0.64, 1);
+  }
+  .hs[data-state="point"] .hs-arm-type {
+    opacity: 0;
+  }
+  .hs[data-state="point"] .hs-arm-point {
+    opacity: 1;
+    transform: rotate(0deg);
+  }
+
+  .hs-steam {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 3;
+    stroke-linecap: round;
+    opacity: 0;
+    animation: hs-steam 2.4s ease-out infinite;
+  }
+  .hs-plant {
+    transform-origin: 100px 372px;
+    animation: hs-sway 5s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hs *,
+    .hs {
+      animation: none !important;
+    }
+  }
+}
+
+@keyframes hs-breathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+@keyframes hs-head {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-2deg); }
+  65% { transform: rotate(1.5deg); }
+}
+@keyframes hs-tilt {
+  to { transform: rotate(4deg) translateY(-2px); }
+}
+@keyframes hs-ant {
+  0%, 100% { transform: rotate(-5deg); }
+  50% { transform: rotate(5deg); }
+}
+@keyframes hs-blink {
+  0%, 94%, 100% { transform: scaleY(1); }
+  97% { transform: scaleY(0.1); }
+}
+@keyframes hs-led {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+@keyframes hs-tap {
+  from { transform: translateY(0); }
+  to { transform: translateY(-5px); }
+}
+@keyframes hs-steam {
+  0% { opacity: 0; transform: translateY(6px); }
+  30% { opacity: 0.45; }
+  100% { opacity: 0; transform: translateY(-14px); }
+}
+@keyframes hs-sway {
+  0%, 100% { transform: rotate(-1.5deg); }
+  50% { transform: rotate(1.5deg); }
+}

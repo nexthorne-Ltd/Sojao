@@ -4,6 +4,7 @@ import { ArrowUpRight } from "lucide-react";
 
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
+import { siteConfig } from "@/lib/site-config";
 
 export function Footer() {
   const navigation = [
@@ -14,12 +15,16 @@ export function Footer() {
     { name: "Contact", href: "/contact" },
   ];
 
+  // Only shown once real profile URLs are set (see .env.example).
   const social = [
-    { name: "X", href: "#" },
-    { name: "LinkedIn", href: "#" },
-  ];
+    { name: "X", href: siteConfig.social.x },
+    { name: "LinkedIn", href: siteConfig.social.linkedin },
+  ].filter((item): item is { name: string; href: string } => !!item.href);
 
-  const legal = [{ name: "Privacy Policy", href: "/privacy" }];
+  const legal = [
+    { name: "Privacy Policy", href: "/privacy" },
+    { name: "Terms of Service", href: "/terms" },
+  ];
 
   return (
     <footer className="flex flex-col items-center gap-14 pt-28 lg:pt-32">
@@ -33,13 +38,13 @@ export function Footer() {
         </p>
         <div>
           <Button size="lg" className="mt-4" asChild>
-            <a href="/signup">Start free</a>
+            <Link href="/signup">Join the beta</Link>
           </Button>
         </div>
       </div>
 
-      <nav className="container flex flex-col items-center gap-4">
-        <ul className="flex flex-wrap items-center justify-center gap-6">
+      <nav aria-label="Footer" className="container flex flex-col items-center gap-4">
+        <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
           {navigation.map((item) => (
             <li key={item.name}>
               <Link
@@ -52,16 +57,18 @@ export function Footer() {
           ))}
           {social.map((item) => (
             <li key={item.name}>
-              <Link
+              <a
                 href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-0.5 font-medium transition-opacity hover:opacity-75"
               >
                 {item.name} <ArrowUpRight className="size-4" />
-              </Link>
+              </a>
             </li>
           ))}
         </ul>
-        <ul className="flex flex-wrap items-center justify-center gap-6">
+        <ul className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
           {legal.map((item) => (
             <li key={item.name}>
               <Link
@@ -73,6 +80,29 @@ export function Footer() {
             </li>
           ))}
         </ul>
+        <div className="text-muted-foreground space-y-1 text-center text-sm">
+          <p>
+            © {new Date().getFullYear()} {siteConfig.legalName}. Sojao AI is a
+            product of {siteConfig.legalName}.
+          </p>
+          <p>
+            {siteConfig.contactEmail ? (
+              <a
+                href={`mailto:${siteConfig.contactEmail}`}
+                className="hover:text-foreground underline underline-offset-4"
+              >
+                {siteConfig.contactEmail}
+              </a>
+            ) : (
+              <Link
+                href="/contact"
+                className="hover:text-foreground underline underline-offset-4"
+              >
+                Contact us
+              </Link>
+            )}
+          </p>
+        </div>
       </nav>
 
       <div className="mt-10 flex w-full justify-center overflow-hidden pt-[4vw] pb-4 md:mt-14 lg:mt-20">

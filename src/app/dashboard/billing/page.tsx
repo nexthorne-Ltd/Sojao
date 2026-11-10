@@ -59,7 +59,7 @@ export default function BillingPage() {
       <div className="from-brand/15 via-glow/10 to-card mb-6 flex flex-wrap items-center gap-4 rounded-2xl border bg-linear-to-r p-5">
         <Badge tone="brand">BETA</Badge>
         <p className="flex-1 text-sm">
-          You&apos;re a founding brand. Sojao is <b>free until [beta end date]</b>.
+          You&apos;re a founding brand. Sojao is <b>free for your first 3 months</b>.
           After that you keep a <b>50% founding discount</b>.
         </p>
       </div>
@@ -192,7 +192,7 @@ export default function BillingPage() {
               <CreditCard className="size-5" />
             </span>
             <div className="flex-1">
-              <p className="font-medium">[Card on file]</p>
+              <p className="font-medium">No card on file</p>
               <p className="text-muted-foreground text-xs">No card needed during the beta</p>
             </div>
             <Button size="sm" variant="outline">
@@ -200,7 +200,7 @@ export default function BillingPage() {
             </Button>
           </div>
           <div className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
-            <Detail label="Billing email" value="[billing email]" />
+            <Detail label="Billing email" value="Not set" />
             <Detail label="Company" value={brand.name} />
           </div>
         </Panel>
@@ -262,7 +262,7 @@ export default function BillingPage() {
       </Panel>
 
       <div className="text-muted-foreground mt-6 flex flex-wrap items-center justify-between gap-3 text-sm">
-        <span>Need to cancel? You can cancel your plan here. [Cancellation terms]</span>
+        <span>Need to cancel? You can cancel your plan here.</span>
         <Button variant="outline" size="sm">
           Cancel plan
         </Button>
