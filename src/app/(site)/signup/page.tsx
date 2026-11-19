@@ -1,12 +1,16 @@
 import Link from "next/link";
 
-import { FcGoogle } from "react-icons/fc";
-
+import { SignupForm } from "@/components/auth-forms";
 import { Background } from "@/components/background";
 import { Logo } from "@/components/logo";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata({
+  title: "Join the beta",
+  description: "Create your Sojao AI account. Marketing automations for Instagram and Messenger, free during the beta.",
+  path: "/signup",
+});
 
 const Signup = () => {
   return (
@@ -19,31 +23,22 @@ const Signup = () => {
                 <Logo className="mb-7 text-4xl" />
                 <p className="mb-2 text-2xl font-bold">Join the beta</p>
                 <p className="text-muted-foreground">
-                  Set up in about 10 minutes. Your first 3 months are free.
+                  Sojao Marketing is free during the beta.
                 </p>
               </CardHeader>
               <CardContent>
-                <div className="grid gap-4">
-                  <Input type="text" placeholder="Enter your name" required />
-                  <Input type="email" placeholder="Enter your email" required />
-                  <div>
-                    <Input
-                      type="password"
-                      placeholder="Enter your password"
-                      required
-                    />
-                    <p className="text-muted-foreground mt-1 text-sm">
-                      Must be at least 8 characters.
-                    </p>
-                  </div>
-                  <Button className="mt-2 w-full" asChild>
-                    <Link href="/onboarding">Start free</Link>
-                  </Button>
-                  <Button variant="outline" className="w-full">
-                    <FcGoogle className="mr-2 size-5" />
-                    Sign up with Google
-                  </Button>
-                </div>
+                <SignupForm />
+                <p className="text-muted-foreground mt-4 text-center text-xs">
+                  By signing up you agree to our{" "}
+                  <Link href="/terms" className="underline underline-offset-4">
+                    Terms
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy" className="underline underline-offset-4">
+                    Privacy Policy
+                  </Link>
+                  .
+                </p>
                 <div className="text-muted-foreground mx-auto mt-8 flex justify-center gap-1 text-sm">
                   <p>Already have an account?</p>
                   <Link href="/login" className="text-primary font-medium">

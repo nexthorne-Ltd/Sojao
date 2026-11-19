@@ -1,109 +1,95 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import {
-  Ban,
-  CalendarPlus,
-  CheckCircle2,
-  Download,
-  KeyRound,
-  LogIn,
-  Mail,
-  Search,
-  Trash2,
-  X,
-} from "lucide-react";
+import { Download, Search, X } from "lucide-react";
 
-import { useAdmin } from "@/components/admin/store";
-import {
-  Avatar,
-  Badge,
-  ChannelIcon,
-  PageHeader,
-  Panel,
-  Table,
-  Td,
-  Th,
-  Tabs,
-  money,
-} from "@/components/dashboard/ui";
+import { type Account, errText, fmtDate, type Plan, STATUS_META, type SubStatus, useAdmin } from "@/components/admin/store";
+import { useApi } from "@/components/dashboard/marketing/live/use-api";
+import { Avatar, Badge, PageHeader, Panel, Table, Tabs, Td, Th, money } from "@/components/dashboard/ui";
 import { Button } from "@/components/ui/button";
-import {
-  type AdminUser,
-  type BillingCycle,
-  type PlanId,
-  STATUS_META,
-  type UserStatus,
-  fmtDate,
-  userMrr,
-} from "@/lib/admin-data";
+import { api } from "@/lib/marketing-api";
 import { cn } from "@/lib/utils";
 
-type Filter = "all" | UserStatus;
+type Filter = "all" | SubStatus;
+const inputCls = "bg-background focus-visible:ring-ring/50 h-9 w-full rounded-xl border px-3 text-sm outline-none focus-visible:ring-[3px]";
+
+export const accountMrr = (a: Account, plans: Plan[]) => {
+  if (!a.sub || (a.sub.status !== "active" && a.sub.status !== "past_due")) return 0;
+  const p = plans.find((x) => x.id === a.sub!.planId);
+  return p ? (a.sub.cycle === "yearly" ? p.yearly / 12 : p.monthly) : 0;
+};
+
+const csvCell = (v: unknown) => {
+  const s = String(v ?? "");
+  return /[",\n]/.test(s) || /^[=+\-@]/.test(s) ? `"${s.replace(/^([=+\-@])/, "'$1").replace(/"/g, '""')}"` : s;
+};
 
 export function AdminUsers({ initialId }: { initialId: string | null }) {
-  const { users, plans } = useAdmin();
-  const [q, setQ] = useState("");
+  const { accounts } = useAdmin();
+  const plans = useApi<{ plans: Plan[] }>("/admin/plans").data?.plans ?? [];
   const [filter, setFilter] = useState<Filter>("all");
-  const [plan, setPlan] = useState<"all" | PlanId>("all");
+  const [plan, setPlan] = useState("all");
+  const [q, setQ] = useState("");
   const [selected, setSelected] = useState<string | null>(initialId);
+  const list = useMemo(() => accounts ?? [], [accounts]);
+  const count = (s: SubStatus) => list.filter((a) => a.sub?.status === s).length;
 
-  const list = useMemo(() => {
-    const s = q.trim().toLowerCase();
-    return users.filter(
-      (u) =>
-        (filter === "all" || u.status === filter) &&
-        (plan === "all" || u.plan === plan) &&
-        (!s || [u.name, u.email, u.brand, u.country].some((v) => v.toLowerCase().includes(s))),
-    );
-  }, [users, q, filter, plan]);
-
-  const count = (st: UserStatus) => users.filter((u) => u.status === st).length;
-  const user = users.find((u) => u.id === selected) ?? null;
+  const shown = useMemo(
+    () =>
+      list.filter(
+        (a) =>
+          (filter === "all" || a.sub?.status === filter) &&
+          (plan === "all" || a.sub?.planId === plan) &&
+          (!q || `${a.workspace.name} ${a.owner?.name ?? ""} ${a.owner?.email ?? ""}`.toLowerCase().includes(q.toLowerCase())),
+      ),
+    [list, filter, plan, q],
+  );
 
   const exportCsv = () => {
-    const head = ["Name", "Email", "Brand", "Country", "Plan", "Cycle", "Status", "Signed up", "Total paid"];
-    const rows = list.map((u) => [u.name, u.email, u.brand, u.country, u.plan, u.cycle, u.status, u.signedUp, u.totalPaid]);
-    const csv = [head, ...rows].map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-    a.download = "sojao-users.csv";
-    a.click();
-    URL.revokeObjectURL(a.href);
+    const rows = [["brand", "owner", "email", "plan", "cycle", "status", "beta", "signed_up", "last_login", "instagram_accounts", "messages_this_month"]];
+    for (const a of shown)
+      rows.push([a.workspace.name, a.owner?.name ?? "", a.owner?.email ?? "", a.sub?.planId ?? "", a.sub?.cycle ?? "", a.sub?.status ?? "", String(a.sub?.beta ?? ""), a.workspace.createdAt, a.owner?.lastLoginAt ?? "", String(a.instagramAccounts), String(a.conversationsThisMonth)]);
+    const url = URL.createObjectURL(new Blob([rows.map((r) => r.map(csvCell).join(",")).join("\r\n")], { type: "text/csv" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "sojao-accounts.csv";
+    link.click();
+    URL.revokeObjectURL(url);
   };
+
+  const select = (id: string | null) => {
+    setSelected(id);
+    window.history.replaceState(null, "", id ? `/admin/users?u=${id}` : "/admin/users");
+  };
+  const current = list.find((a) => a.workspace.id === selected);
 
   return (
     <>
       <PageHeader
         title="Users"
-        description="Every registered account, their plan and status. Click a user to manage them."
+        description="Every brand on Sojao, its owner, plan and status."
         actions={
-          <Button variant="outline" onClick={exportCsv}>
-            <Download /> Export CSV
+          <Button variant="outline" onClick={exportCsv} disabled={!shown.length}>
+            <Download className="size-4" /> Export CSV
           </Button>
         }
       />
-
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <Tabs<Filter>
-          value={filter}
-          onChange={setFilter}
+        <Tabs
+          className="flex-wrap"
           tabs={[
-            { id: "all", label: "All", count: users.length },
+            { id: "all", label: "All", count: list.length },
             { id: "active", label: "Active", count: count("active") },
             { id: "trial", label: "Trial", count: count("trial") },
             { id: "past_due", label: "Past due", count: count("past_due") },
             { id: "suspended", label: "Suspended", count: count("suspended") },
             { id: "cancelled", label: "Cancelled", count: count("cancelled") },
           ]}
+          value={filter}
+          onChange={setFilter}
         />
-        <select
-          value={plan}
-          onChange={(e) => setPlan(e.target.value as "all" | PlanId)}
-          className="bg-background h-9 rounded-xl border px-3 text-sm"
-          aria-label="Filter by plan"
-        >
+        <select aria-label="Filter by plan" value={plan} onChange={(e) => setPlan(e.target.value)} className={cn(inputCls, "w-36")}>
           <option value="all">All plans</option>
           {plans.map((p) => (
             <option key={p.id} value={p.id}>
@@ -113,12 +99,7 @@ export function AdminUsers({ initialId }: { initialId: string | null }) {
         </select>
         <label className="bg-background flex h-9 min-w-0 flex-1 items-center gap-2 rounded-xl border px-3 text-sm sm:max-w-xs">
           <Search className="text-muted-foreground size-4" />
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search name, email, brand…"
-            className="placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent outline-none"
-          />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search brand, name or email" aria-label="Search accounts" className="min-w-0 flex-1 bg-transparent outline-none" />
         </label>
       </div>
 
@@ -129,290 +110,150 @@ export function AdminUsers({ initialId }: { initialId: string | null }) {
               <Th>User</Th>
               <Th>Plan</Th>
               <Th>Status</Th>
-              <Th>Channels</Th>
+              <Th>Instagram</Th>
               <Th className="text-right">MRR</Th>
               <Th>Signed up</Th>
-              <Th>Last active</Th>
+              <Th>Last login</Th>
             </tr>
           </thead>
           <tbody>
-            {list.map((u) => (
-              <tr
-                key={u.id}
-                onClick={() => setSelected(u.id)}
-                className={cn("hover:bg-accent/50 cursor-pointer", selected === u.id && "bg-accent/60")}
-              >
+            {shown.map((a) => (
+              <tr key={a.workspace.id} onClick={() => select(a.workspace.id)} className={cn("hover:bg-accent/30 cursor-pointer", a.workspace.id === selected && "bg-accent/40")}>
                 <Td>
                   <div className="flex items-center gap-3">
-                    <Avatar name={u.name} />
+                    <Avatar name={a.owner?.name ?? a.workspace.name} />
                     <div className="min-w-0">
-                      <p className="truncate font-medium">{u.name}</p>
-                      <p className="text-muted-foreground truncate text-xs">
-                        {u.brand} · {u.email}
-                      </p>
+                      <p className="truncate font-medium">{a.workspace.name}</p>
+                      <p className="text-muted-foreground truncate text-xs">{a.owner ? `${a.owner.name} · ${a.owner.email}` : "No owner"}</p>
                     </div>
                   </div>
                 </Td>
-                <Td>
-                  <span className="font-medium">{plans.find((p) => p.id === u.plan)!.name}</span>
-                  <span className="text-muted-foreground block text-xs capitalize">{u.cycle}</span>
-                </Td>
-                <Td>
-                  <Badge tone={STATUS_META[u.status].tone}>{STATUS_META[u.status].label}</Badge>
-                  {u.beta && <Badge tone="brand" className="ml-1">Beta</Badge>}
-                </Td>
-                <Td>
-                  <div className="flex gap-1.5">
-                    {u.channels.map((c) => (
-                      <ChannelIcon key={c} channel={c} />
-                    ))}
-                  </div>
-                </Td>
-                <Td className="text-right tabular-nums">{money(userMrr(u, plans))}</Td>
-                <Td className="text-muted-foreground whitespace-nowrap">{fmtDate(u.signedUp)}</Td>
-                <Td className="text-muted-foreground whitespace-nowrap">{u.lastActive}</Td>
+                <Td>{plans.find((p) => p.id === a.sub?.planId)?.name ?? a.sub?.planId ?? "—"}</Td>
+                <Td>{a.sub ? <Badge tone={STATUS_META[a.sub.status].tone}>{STATUS_META[a.sub.status].label}</Badge> : "—"}</Td>
+                <Td>{a.instagramAccounts ? <Badge tone="good">Connected</Badge> : <span className="text-muted-foreground">—</span>}</Td>
+                <Td className="text-right tabular-nums">{money(accountMrr(a, plans))}</Td>
+                <Td className="text-muted-foreground">{fmtDate(a.workspace.createdAt)}</Td>
+                <Td className="text-muted-foreground">{fmtDate(a.owner?.lastLoginAt)}</Td>
               </tr>
             ))}
+            {shown.length === 0 && (
+              <tr>
+                <Td colSpan={7} className="text-muted-foreground text-center">
+                  {accounts === null ? "Loading…" : "No accounts match."}
+                </Td>
+              </tr>
+            )}
           </tbody>
         </Table>
-        {list.length === 0 && (
-          <p className="text-muted-foreground py-10 text-center text-sm">No users match these filters.</p>
-        )}
       </Panel>
 
-      {user && <UserDrawer user={user} onClose={() => setSelected(null)} />}
+      {current && <AccountDrawer a={current} plans={plans} onClose={() => select(null)} />}
     </>
   );
 }
 
-/* ---------------- Drawer with admin controls ---------------- */
+function AccountDrawer({ a, plans, onClose }: { a: Account; plans: Plan[]; onClose: () => void }) {
+  const { can, reloadAccounts, notify } = useAdmin();
+  const [notes, setNotes] = useState(a.sub?.adminNotes ?? "");
+  const [err, setErr] = useState<string | null>(null);
+  useEffect(() => setNotes(a.sub?.adminNotes ?? ""), [a.sub?.adminNotes]);
 
-function UserDrawer({ user: u, onClose }: { user: AdminUser; onClose: () => void }) {
-  const { plans, payments, updateUser, deleteUser } = useAdmin();
-  const [confirmDelete, setConfirmDelete] = useState(false);
-  const [notes, setNotes] = useState(u.notes);
-  const [key, setKey] = useState(u.id);
-  if (key !== u.id) {
-    setKey(u.id);
-    setNotes(u.notes);
-    setConfirmDelete(false);
-  }
-
-  const plan = plans.find((p) => p.id === u.plan)!;
-  const usage = Math.min(100, Math.round((u.conversations / plan.limits.conversations) * 100));
-  const userPayments = payments.filter((p) => p.userId === u.id);
-
-  const addDays = (iso: string, days: number) => {
-    const d = new Date(iso + "T00:00:00");
-    d.setDate(d.getDate() + days);
-    return d.toISOString().slice(0, 10);
+  const patch = async (body: Record<string, unknown>, msg: string) => {
+    setErr(null);
+    try {
+      await api(`/admin/accounts/${a.workspace.id}`, { method: "PATCH", body });
+      await reloadAccounts();
+      notify(`${msg}: ${a.workspace.name}`);
+    } catch (e) {
+      setErr(errText(e));
+    }
   };
+  const write = can("write");
 
   return (
     <>
-      <button aria-label="Close" className="fixed inset-0 z-[55] bg-black/30" onClick={onClose} />
-      <aside className="bg-background fixed inset-y-0 right-0 z-[56] flex w-full max-w-md flex-col border-l shadow-2xl">
-        <header className="flex items-center gap-3 border-b px-5 py-4">
-          <Avatar name={u.name} className="size-11 text-sm" />
-          <div className="min-w-0 flex-1">
-            <p className="truncate font-semibold">{u.name}</p>
-            <p className="text-muted-foreground truncate text-sm">{u.email}</p>
+      <button aria-label="Close" className="fixed inset-0 z-50 bg-black/30" onClick={onClose} />
+      <aside className="bg-background fixed inset-y-0 right-0 z-50 w-full max-w-md overflow-y-auto border-l p-6 shadow-2xl">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <Avatar name={a.owner?.name ?? a.workspace.name} className="size-12 text-sm" />
+            <div>
+              <p className="font-semibold">{a.workspace.name}</p>
+              <p className="text-muted-foreground text-sm">{a.owner ? `${a.owner.name} · ${a.owner.email}` : "No owner"}</p>
+            </div>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground" aria-label="Close panel">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground" aria-label="Close">
             <X className="size-5" />
           </button>
-        </header>
-
-        <div className="flex-1 space-y-6 overflow-y-auto p-5">
-          <div className="flex flex-wrap gap-2">
-            <Badge tone={STATUS_META[u.status].tone}>{STATUS_META[u.status].label}</Badge>
-            {u.beta && <Badge tone="brand">Beta</Badge>}
-            <Badge tone={u.verified ? "good" : "warn"}>{u.verified ? "Email verified" : "Email not verified"}</Badge>
-          </div>
-
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-            <Info label="Brand" value={u.brand} />
-            <Info label="Country" value={u.country} />
-            <Info label="Signed up" value={fmtDate(u.signedUp)} />
-            <Info label="Last active" value={u.lastActive} />
-            <Info label={u.status === "trial" ? "Trial ends" : "Renews on"} value={fmtDate(u.renewsOn)} />
-            <Info label="Total paid" value={money(u.totalPaid)} />
-          </dl>
-
-          {/* Plan */}
-          <section className="space-y-3 rounded-2xl border p-4">
-            <h3 className="text-sm font-semibold">Plan &amp; billing</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="text-sm">
-                <span className="text-muted-foreground mb-1 block text-xs">Plan</span>
-                <select
-                  value={u.plan}
-                  onChange={(e) => {
-                    const p = plans.find((x) => x.id === e.target.value)!;
-                    updateUser(u.id, { plan: p.id }, `Changed plan to ${p.name}`);
-                  }}
-                  className="bg-background h-9 w-full rounded-lg border px-2"
-                >
-                  {plans.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} ({money(p.monthly)}/mo)
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="text-sm">
-                <span className="text-muted-foreground mb-1 block text-xs">Billing</span>
-                <select
-                  value={u.cycle}
-                  onChange={(e) =>
-                    updateUser(u.id, { cycle: e.target.value as BillingCycle }, `Switched billing to ${e.target.value}`)
-                  }
-                  className="bg-background h-9 w-full rounded-lg border px-2"
-                >
-                  <option value="monthly">Monthly</option>
-                  <option value="yearly">Yearly</option>
-                </select>
-              </label>
-            </div>
-            <div>
-              <div className="mb-1 flex justify-between text-xs">
-                <span className="text-muted-foreground">Conversations this month</span>
-                <span className="tabular-nums">
-                  {u.conversations.toLocaleString()} / {plan.limits.conversations.toLocaleString()}
-                </span>
-              </div>
-              <div className="bg-muted h-2 overflow-hidden rounded-full">
-                <div
-                  className={cn("h-full rounded-full", usage >= 90 ? "bg-amber-500" : "bg-brand")}
-                  style={{ width: `${usage}%` }}
-                />
-              </div>
-            </div>
-            <label className="flex items-center justify-between text-sm">
-              Beta pricing (free months)
-              <input
-                type="checkbox"
-                checked={u.beta}
-                onChange={(e) => updateUser(u.id, { beta: e.target.checked }, e.target.checked ? "Added to beta" : "Removed from beta")}
-                className="accent-[var(--brand)] size-4"
-              />
-            </label>
-          </section>
-
-          {/* Actions */}
-          <section className="space-y-2">
-            <h3 className="text-sm font-semibold">Admin actions</h3>
-            <div className="grid grid-cols-2 gap-2">
-              {u.status === "suspended" ? (
-                <Action icon={CheckCircle2} onClick={() => updateUser(u.id, { status: "active" }, "Reactivated account")}>
-                  Reactivate
-                </Action>
-              ) : (
-                <Action icon={Ban} tone="bad" onClick={() => updateUser(u.id, { status: "suspended" }, "Suspended account")}>
-                  Suspend
-                </Action>
-              )}
-              <Action
-                icon={CalendarPlus}
-                onClick={() =>
-                  updateUser(
-                    u.id,
-                    { renewsOn: addDays(u.renewsOn, 7), status: u.status === "cancelled" ? "trial" : u.status },
-                    u.status === "trial" || u.status === "cancelled" ? "Extended trial by 7 days" : "Added 7 free days",
-                  )
-                }
-              >
-                +7 days free
-              </Action>
-              {u.status === "past_due" && (
-                <Action icon={CheckCircle2} onClick={() => updateUser(u.id, { status: "active" }, "Marked as paid")}>
-                  Mark as paid
-                </Action>
-              )}
-              {u.status !== "cancelled" && (
-                <Action icon={X} onClick={() => updateUser(u.id, { status: "cancelled" }, "Cancelled subscription")}>
-                  Cancel plan
-                </Action>
-              )}
-              {!u.verified && (
-                <Action icon={Mail} onClick={() => updateUser(u.id, { verified: true }, "Verified email manually")}>
-                  Verify email
-                </Action>
-              )}
-              <Action icon={KeyRound} onClick={() => updateUser(u.id, {}, "Sent password reset")}>
-                Reset password
-              </Action>
-              <Action icon={LogIn} onClick={() => updateUser(u.id, {}, "Logged in as user")}>
-                Log in as user
-              </Action>
-            </div>
-          </section>
-
-          {/* Payments */}
-          <section>
-            <h3 className="mb-2 text-sm font-semibold">Payments</h3>
-            {userPayments.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No payments yet.</p>
-            ) : (
-              <ul className="divide-y rounded-2xl border text-sm">
-                {userPayments.map((p) => (
-                  <li key={p.id} className="flex items-center gap-3 px-4 py-2.5">
-                    <span className="flex-1">
-                      {p.id} <span className="text-muted-foreground">· {fmtDate(p.date)}</span>
-                    </span>
-                    <span className="tabular-nums">{money(p.amount)}</span>
-                    <Badge tone={p.status === "paid" ? "good" : p.status === "failed" ? "bad" : "neutral"}>{p.status}</Badge>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-
-          {/* Notes */}
-          <section>
-            <h3 className="mb-2 text-sm font-semibold">Internal notes</h3>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              placeholder="Only admins can see this."
-              className="bg-background w-full rounded-xl border p-3 text-sm outline-none focus:ring-2"
-            />
-            {notes !== u.notes && (
-              <Button size="sm" className="mt-2" onClick={() => updateUser(u.id, { notes }, "Updated notes")}>
-                Save note
-              </Button>
-            )}
-          </section>
         </div>
 
-        <footer className="border-t p-4">
-          {confirmDelete ? (
-            <div className="flex items-center gap-2">
-              <p className="flex-1 text-sm">Delete {u.brand}? This can&apos;t be undone.</p>
-              <Button variant="outline" size="sm" onClick={() => setConfirmDelete(false)}>
-                Keep
-              </Button>
-              <Button
-                size="sm"
-                className="bg-rose-600 text-white hover:bg-rose-700"
-                onClick={() => {
-                  deleteUser(u.id);
-                  onClose();
-                }}
-              >
-                Delete
-              </Button>
-            </div>
-          ) : (
-            <button
-              onClick={() => setConfirmDelete(true)}
-              className="flex items-center gap-2 text-sm text-rose-600 hover:underline"
+        <dl className="mt-6 grid grid-cols-2 gap-3 text-sm">
+          <Info label="Signed up" value={fmtDate(a.workspace.createdAt)} />
+          <Info label="Last login" value={fmtDate(a.owner?.lastLoginAt)} />
+          <Info label="Instagram" value={a.instagramAccounts ? "Connected" : "Not connected"} />
+          <Info label="Messages this month" value={a.conversationsThisMonth.toLocaleString()} />
+          <Info label="Trial ends" value={fmtDate(a.sub?.trialEndsAt)} />
+          <Info label="Beta" value={a.sub?.beta ? "Yes" : "No"} />
+        </dl>
+
+        <section className="mt-6 space-y-3">
+          <p className="text-muted-foreground text-xs font-medium uppercase">Plan and status</p>
+          <div className="grid grid-cols-2 gap-2">
+            <select aria-label="Plan" disabled={!write} value={a.sub?.planId ?? ""} onChange={(e) => void patch({ planId: e.target.value }, "Changed plan")} className={inputCls}>
+              {plans.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            <select aria-label="Billing cycle" disabled={!write} value={a.sub?.cycle ?? "monthly"} onChange={(e) => void patch({ cycle: e.target.value }, "Changed billing")} className={inputCls}>
+              <option value="monthly">Monthly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+            <select
+              aria-label="Status"
+              disabled={!write}
+              value={a.sub?.status ?? "trial"}
+              onChange={(e) => {
+                const s = e.target.value as SubStatus;
+                if ((s === "suspended" || s === "cancelled") && !window.confirm(`${STATUS_META[s].label} ${a.workspace.name}? Everyone on this brand is signed out and can't use Sojao until you change it back.`)) return;
+                void patch({ status: s }, `Status → ${STATUS_META[s].label}`);
+              }}
+              className={inputCls}
             >
-              <Trash2 className="size-4" /> Delete account
-            </button>
-          )}
-        </footer>
+              {(Object.keys(STATUS_META) as SubStatus[]).map((s) => (
+                <option key={s} value={s}>
+                  {STATUS_META[s].label}
+                </option>
+              ))}
+            </select>
+            <Button variant="outline" size="sm" disabled={!write} className="h-9" onClick={() => void patch({ beta: !a.sub?.beta }, a.sub?.beta ? "Beta off" : "Beta on")}>
+              {a.sub?.beta ? "Remove beta" : "Mark as beta"}
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {[7, 14, 30].map((d) => (
+              <Button key={d} variant="outline" size="sm" disabled={!can("support")} onClick={() => void patch({ extendTrialDays: d }, `Trial +${d} days`)}>
+                Extend trial +{d} days
+              </Button>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-6 space-y-2">
+          <p className="text-muted-foreground text-xs font-medium uppercase">Internal notes</p>
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} maxLength={2000} disabled={!can("support")} className={cn(inputCls, "h-auto py-2")} placeholder="Only Sojao admins see this." />
+          <Button size="sm" disabled={!can("support") || notes === (a.sub?.adminNotes ?? "")} onClick={() => void patch({ adminNotes: notes }, "Saved notes")}>
+            Save notes
+          </Button>
+        </section>
+
+        <section className="mt-6">
+          <p className="text-muted-foreground text-xs font-medium uppercase">Payments</p>
+          <p className="text-muted-foreground mt-1 text-sm">No payment provider is connected yet, so there are no invoices.</p>
+        </section>
+        {!write && <p className="text-muted-foreground mt-4 text-xs">Your admin role can view this account{can("support") ? ", extend trials and edit notes" : ""}.</p>}
+        {err && <p className="mt-3 text-sm text-rose-600">{err}</p>}
       </aside>
     </>
   );
@@ -420,33 +261,9 @@ function UserDrawer({ user: u, onClose }: { user: AdminUser; onClose: () => void
 
 function Info({ label, value }: { label: string; value: string }) {
   return (
-    <div>
+    <div className="bg-muted rounded-xl p-3">
       <dt className="text-muted-foreground text-xs">{label}</dt>
-      <dd className="font-medium">{value}</dd>
+      <dd className="mt-0.5 font-medium">{value}</dd>
     </div>
-  );
-}
-
-function Action({
-  icon: Icon,
-  children,
-  onClick,
-  tone,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  children: React.ReactNode;
-  onClick: () => void;
-  tone?: "bad";
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "hover:bg-accent flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-sm font-medium",
-        tone === "bad" && "text-rose-600",
-      )}
-    >
-      <Icon className="size-4 shrink-0" /> {children}
-    </button>
   );
 }

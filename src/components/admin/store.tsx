@@ -1,25 +1,10 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
-import {
-  AUDIT,
-  type AdminUser,
-  type AuditEntry,
-  PAYMENTS,
-  PLANS,
-  type Payment,
-  type Plan,
-  TEAM,
-  type TeamMember,
-  USERS,
-} from "@/lib/admin-data";
+import { api, ApiError } from "@/lib/marketing-api";
 
-/**
- * Client-side admin state for the demo. Every action here is where a real
- * API call (PATCH /api/admin/users/:id, etc.) would go. State is mirrored to
- * localStorage so changes survive a reload while you click around.
- */
+/** Admin panel state, loaded from the Sojao API (/api/admin/*). Only platform admins get in. */
 
 export type PlatformSettings = {
   signupsOpen: boolean;
@@ -32,76 +17,80 @@ export type PlatformSettings = {
   aiAutoReplyGlobal: boolean;
 };
 
-const DEFAULT_SETTINGS: PlatformSettings = {
-  signupsOpen: true,
-  maintenance: false,
-  betaFreeMonths: 3,
-  trialDays: 14,
-  announcement: "Sojao is free for your first 3 months, then 50% off.",
-  announcementOn: true,
-  requireEmailVerify: true,
-  aiAutoReplyGlobal: true,
+export type AdminRole = "owner" | "admin" | "support" | "viewer";
+export type SubStatus = "trial" | "active" | "past_due" | "suspended" | "cancelled";
+
+export type Account = {
+  workspace: { id: string; name: string; createdAt: string };
+  owner: { id: string; name: string; email: string; lastLoginAt: string | null; createdAt: string } | null;
+  sub: { workspaceId: string; planId: string; cycle: "monthly" | "yearly"; status: SubStatus; beta: boolean; trialEndsAt: string | null; renewsOn: string | null; adminNotes: string } | null;
+  conversationsThisMonth: number;
+  instagramAccounts: number;
 };
 
-type State = {
-  users: AdminUser[];
-  plans: Plan[];
-  payments: Payment[];
-  audit: AuditEntry[];
-  team: TeamMember[];
-  settings: PlatformSettings;
+export type Plan = {
+  id: string;
+  name: string;
+  monthly: number;
+  yearly: number;
+  description: string;
+  active: boolean;
+  limits: { conversations: number; channels: number; seats: number };
+  accounts: number;
 };
 
-const initial: State = {
-  users: USERS,
-  plans: PLANS,
-  payments: PAYMENTS,
-  audit: AUDIT,
-  team: TEAM,
-  settings: DEFAULT_SETTINGS,
+export const STATUS_META: Record<SubStatus, { label: string; tone: "good" | "info" | "warn" | "bad" | "neutral" }> = {
+  active: { label: "Active", tone: "good" },
+  trial: { label: "Trial", tone: "info" },
+  past_due: { label: "Past due", tone: "warn" },
+  suspended: { label: "Suspended", tone: "bad" },
+  cancelled: { label: "Cancelled", tone: "neutral" },
 };
 
-type Ctx = State & {
-  updateUser: (id: string, patch: Partial<AdminUser>, log: string) => void;
-  deleteUser: (id: string) => void;
-  updatePlan: (id: Plan["id"], patch: Partial<Plan>, log: string) => void;
-  updateSettings: (patch: Partial<PlatformSettings>, log: string) => void;
-  refund: (paymentId: string) => void;
-  addTeam: (m: Omit<TeamMember, "id" | "lastActive">) => void;
-  updateTeam: (id: string, patch: Partial<TeamMember>) => void;
-  removeTeam: (id: string) => void;
-  reset: () => void;
+export const fmtDate = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—");
+
+type Ctx = {
+  me: { id: string; name: string; email: string; role: AdminRole } | null;
+  settings: PlatformSettings | null;
+  accounts: Account[] | null;
+  denied: boolean;
+  error: string | null;
+  reloadAccounts: () => Promise<void>;
+  reloadSettings: () => Promise<void>;
+  can: (need: "support" | "write") => boolean;
   toast: string | null;
+  notify: (msg: string) => void;
 };
 
 const AdminCtx = createContext<Ctx | null>(null);
-const KEY = "sojao-admin-state-v1";
-
-const now = () => {
-  const d = new Date();
-  const p = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
-};
 
 export function AdminProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<State>(initial);
+  const [me, setMe] = useState<Ctx["me"]>(null);
+  const [settings, setSettings] = useState<PlatformSettings | null>(null);
+  const [accounts, setAccounts] = useState<Account[] | null>(null);
+  const [denied, setDenied] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(KEY);
-      if (raw) setState({ ...initial, ...JSON.parse(raw) });
-    } catch {}
-    setLoaded(true);
+  const reloadAccounts = useCallback(async () => {
+    const r = await api<{ accounts: Account[] }>("/admin/accounts");
+    setAccounts(r.accounts);
+  }, []);
+  const reloadSettings = useCallback(async () => {
+    setSettings(await api<PlatformSettings>("/admin/settings"));
   }, []);
 
   useEffect(() => {
-    if (!loaded) return;
-    try {
-      window.localStorage.setItem(KEY, JSON.stringify(state));
-    } catch {}
-  }, [state, loaded]);
+    (async () => {
+      try {
+        setMe(await api<NonNullable<Ctx["me"]>>("/admin/me"));
+        await Promise.all([reloadAccounts(), reloadSettings()]);
+      } catch (e) {
+        if (e instanceof ApiError && e.status === 403) setDenied(true);
+        else setError(e instanceof ApiError ? e.readable : "Can't load the admin panel.");
+      }
+    })();
+  }, [reloadAccounts, reloadSettings]);
 
   useEffect(() => {
     if (!toast) return;
@@ -109,88 +98,14 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(t);
   }, [toast]);
 
-  const log = useCallback((action: string, target?: string) => {
-    setToast(target ? `${action}: ${target}` : action);
-    return { id: `a${Date.now()}`, actor: "You", action, target, time: now() } as AuditEntry;
-  }, []);
-
-  const value = useMemo<Ctx>(
-    () => ({
-      ...state,
-      toast,
-      updateUser: (id, patch, action) =>
-        setState((s) => {
-          const u = s.users.find((x) => x.id === id);
-          return {
-            ...s,
-            users: s.users.map((x) => (x.id === id ? { ...x, ...patch } : x)),
-            audit: [log(action, u?.brand), ...s.audit],
-          };
-        }),
-      deleteUser: (id) =>
-        setState((s) => {
-          const u = s.users.find((x) => x.id === id);
-          return {
-            ...s,
-            users: s.users.filter((x) => x.id !== id),
-            audit: [log("Deleted account", u?.brand), ...s.audit],
-          };
-        }),
-      updatePlan: (id, patch, action) =>
-        setState((s) => ({
-          ...s,
-          plans: s.plans.map((p) => (p.id === id ? { ...p, ...patch } : p)),
-          audit: [log(action), ...s.audit],
-        })),
-      updateSettings: (patch, action) =>
-        setState((s) => ({
-          ...s,
-          settings: { ...s.settings, ...patch },
-          audit: [log(action), ...s.audit],
-        })),
-      refund: (paymentId) =>
-        setState((s) => {
-          const p = s.payments.find((x) => x.id === paymentId);
-          const u = s.users.find((x) => x.id === p?.userId);
-          return {
-            ...s,
-            payments: s.payments.map((x) => (x.id === paymentId ? { ...x, status: "refunded" } : x)),
-            audit: [log(`Refunded ${paymentId}`, u?.brand), ...s.audit],
-          };
-        }),
-      addTeam: (m) =>
-        setState((s) => ({
-          ...s,
-          team: [...s.team, { ...m, id: `t${Date.now()}`, lastActive: "Invited" }],
-          audit: [log(`Invited ${m.role}`, m.email), ...s.audit],
-        })),
-      updateTeam: (id, patch) =>
-        setState((s) => {
-          const m = s.team.find((x) => x.id === id);
-          return {
-            ...s,
-            team: s.team.map((x) => (x.id === id ? { ...x, ...patch } : x)),
-            audit: [log(`Changed role to ${patch.role}`, m?.email), ...s.audit],
-          };
-        }),
-      removeTeam: (id) =>
-        setState((s) => {
-          const m = s.team.find((x) => x.id === id);
-          return {
-            ...s,
-            team: s.team.filter((x) => x.id !== id),
-            audit: [log("Removed team member", m?.email), ...s.audit],
-          };
-        }),
-      reset: () => {
-        setState(initial);
-        setToast("Sample data reset");
-      },
-    }),
-    [state, toast, log],
+  const can = useCallback(
+    (need: "support" | "write") => (me ? (need === "support" ? me.role !== "viewer" : me.role === "owner" || me.role === "admin") : false),
+    [me],
   );
 
-  return <AdminCtx.Provider value={value}>{children}</AdminCtx.Provider>;
+  return (
+    <AdminCtx.Provider value={{ me, settings, accounts, denied, error, reloadAccounts, reloadSettings, can, toast, notify: setToast }}>{children}</AdminCtx.Provider>
+  );
 }
 
 export function useAdmin() {
@@ -198,3 +113,5 @@ export function useAdmin() {
   if (!c) throw new Error("useAdmin must be used inside <AdminProvider>");
   return c;
 }
+
+export const errText = (e: unknown) => (e instanceof ApiError ? e.readable : "Something went wrong. Try again.");

@@ -4,149 +4,87 @@ import { useState } from "react";
 
 import Link from "next/link";
 
-import { useAdmin } from "@/components/admin/store";
+import { fmtDate, type Plan, STATUS_META, useAdmin } from "@/components/admin/store";
+import { accountMrr } from "@/components/admin/users";
+import { useApi } from "@/components/dashboard/marketing/live/use-api";
 import { Badge, PageHeader, Panel, StatCard, Table, Tabs, Td, Th, money } from "@/components/dashboard/ui";
-import { Button } from "@/components/ui/button";
-import { STATUS_META, fmtDate, userMrr } from "@/lib/admin-data";
 
 type Tab = "subscriptions" | "payments";
 
 export function AdminSubscriptions() {
-  const { users, plans, payments, refund, updateUser } = useAdmin();
+  const { accounts } = useAdmin();
+  const plans = useApi<{ plans: Plan[] }>("/admin/plans").data?.plans ?? [];
   const [tab, setTab] = useState<Tab>("subscriptions");
-  const [confirm, setConfirm] = useState<string | null>(null);
-
-  const subs = users
-    .filter((u) => u.status !== "cancelled")
-    .sort((a, b) => a.renewsOn.localeCompare(b.renewsOn));
-  const mrr = users.reduce((s, u) => s + userMrr(u, plans), 0);
-  const yearly = users.filter((u) => u.cycle === "yearly" && u.status === "active").length;
-  const pastDue = users.filter((u) => u.status === "past_due");
-  const collected = payments.filter((p) => p.status === "paid").reduce((s, p) => s + p.amount, 0);
-  const brandOf = (id: string) => users.find((u) => u.id === id);
+  const list = (accounts ?? []).filter((a) => a.sub);
+  const mrr = list.reduce((s, a) => s + accountMrr(a, plans), 0);
+  const trialsEnding = list.filter((a) => a.sub!.status === "trial" && a.sub!.trialEndsAt && new Date(a.sub!.trialEndsAt).getTime() - Date.now() < 7 * 86_400_000);
 
   return (
     <>
-      <PageHeader title="Subscriptions" description="Who is paying for what, upcoming renewals and every payment." />
-
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="MRR" value={money(mrr)} />
-        <StatCard label="Collected (all time)" value={money(collected)} />
-        <StatCard label="On yearly billing" value={String(yearly)} />
-        <StatCard label="Past due" value={String(pastDue.length)} hint="need follow-up" />
+      <PageHeader title="Subscriptions" description="Who is on which plan, trials ending soon, and payments." />
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard label="MRR (from plans)" value={money(mrr)} hint="Active and past-due accounts" />
+        <StatCard label="On trial" value={String(list.filter((a) => a.sub!.status === "trial").length)} hint={`${trialsEnding.length} end within 7 days`} />
+        <StatCard label="Payments collected" value="—" hint="No payment provider connected yet" />
       </div>
-
-      <Tabs<Tab>
-        className="mt-8 mb-4"
+      <Tabs
+        className="my-6"
+        tabs={[
+          { id: "subscriptions", label: "Subscriptions", count: list.length },
+          { id: "payments", label: "Payments" },
+        ]}
         value={tab}
         onChange={setTab}
-        tabs={[
-          { id: "subscriptions", label: "Subscriptions", count: subs.length },
-          { id: "payments", label: "Payments", count: payments.length },
-        ]}
       />
-
       {tab === "subscriptions" ? (
         <Panel>
           <Table>
             <thead>
               <tr>
-                <Th>Account</Th>
+                <Th>Brand</Th>
                 <Th>Plan</Th>
                 <Th>Status</Th>
-                <Th className="text-right">Price</Th>
-                <Th>Renews / ends</Th>
-                <Th />
+                <Th>Trial ends</Th>
+                <Th className="text-right">MRR</Th>
               </tr>
             </thead>
             <tbody>
-              {subs.map((u) => {
-                const p = plans.find((x) => x.id === u.plan)!;
-                return (
-                  <tr key={u.id}>
-                    <Td>
-                      <Link href={`/admin/users?u=${u.id}`} className="font-medium hover:underline">
-                        {u.brand}
-                      </Link>
-                      <span className="text-muted-foreground block text-xs">{u.email}</span>
-                    </Td>
-                    <Td>
-                      {p.name} <span className="text-muted-foreground text-xs capitalize">· {u.cycle}</span>
-                    </Td>
-                    <Td>
-                      <Badge tone={STATUS_META[u.status].tone}>{STATUS_META[u.status].label}</Badge>
-                    </Td>
-                    <Td className="text-right tabular-nums">
-                      {money(u.cycle === "yearly" ? p.yearly : p.monthly)}
-                      <span className="text-muted-foreground text-xs">/{u.cycle === "yearly" ? "yr" : "mo"}</span>
-                    </Td>
-                    <Td className="whitespace-nowrap">{fmtDate(u.renewsOn)}</Td>
-                    <Td className="text-right">
-                      {u.status === "past_due" && (
-                        <Button size="sm" variant="outline" onClick={() => updateUser(u.id, { status: "active" }, "Retried payment, marked paid")}>
-                          Retry charge
-                        </Button>
-                      )}
-                    </Td>
-                  </tr>
-                );
-              })}
+              {list.map((a) => (
+                <tr key={a.workspace.id}>
+                  <Td>
+                    <Link href={`/admin/users?u=${a.workspace.id}`} className="font-medium hover:underline">
+                      {a.workspace.name}
+                    </Link>
+                    <p className="text-muted-foreground text-xs">{a.owner?.email ?? "—"}</p>
+                  </Td>
+                  <Td>
+                    {plans.find((p) => p.id === a.sub!.planId)?.name ?? a.sub!.planId} · {a.sub!.cycle}
+                    {a.sub!.beta && (
+                      <Badge tone="brand" className="ml-2">
+                        Beta
+                      </Badge>
+                    )}
+                  </Td>
+                  <Td>
+                    <Badge tone={STATUS_META[a.sub!.status].tone}>{STATUS_META[a.sub!.status].label}</Badge>
+                  </Td>
+                  <Td className="text-muted-foreground">{a.sub!.status === "trial" ? fmtDate(a.sub!.trialEndsAt) : "—"}</Td>
+                  <Td className="text-right tabular-nums">{money(accountMrr(a, plans))}</Td>
+                </tr>
+              ))}
+              {list.length === 0 && (
+                <tr>
+                  <Td colSpan={5} className="text-muted-foreground text-center">
+                    No subscriptions yet.
+                  </Td>
+                </tr>
+              )}
             </tbody>
           </Table>
         </Panel>
       ) : (
-        <Panel>
-          <Table>
-            <thead>
-              <tr>
-                <Th>Invoice</Th>
-                <Th>Account</Th>
-                <Th>Date</Th>
-                <Th>Method</Th>
-                <Th className="text-right">Amount</Th>
-                <Th>Status</Th>
-                <Th />
-              </tr>
-            </thead>
-            <tbody>
-              {payments.map((p) => (
-                <tr key={p.id}>
-                  <Td className="font-medium">{p.id}</Td>
-                  <Td>{brandOf(p.userId)?.brand ?? "Deleted user"}</Td>
-                  <Td className="whitespace-nowrap">{fmtDate(p.date)}</Td>
-                  <Td className="text-muted-foreground">{p.method}</Td>
-                  <Td className="text-right tabular-nums">{money(p.amount)}</Td>
-                  <Td>
-                    <Badge tone={p.status === "paid" ? "good" : p.status === "failed" ? "bad" : "neutral"}>{p.status}</Badge>
-                  </Td>
-                  <Td className="text-right whitespace-nowrap">
-                    {p.status === "paid" &&
-                      (confirm === p.id ? (
-                        <span className="inline-flex gap-2">
-                          <Button size="sm" variant="outline" onClick={() => setConfirm(null)}>
-                            No
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="bg-rose-600 text-white hover:bg-rose-700"
-                            onClick={() => {
-                              refund(p.id);
-                              setConfirm(null);
-                            }}
-                          >
-                            Refund {money(p.amount)}
-                          </Button>
-                        </span>
-                      ) : (
-                        <Button size="sm" variant="ghost" onClick={() => setConfirm(p.id)}>
-                          Refund
-                        </Button>
-                      ))}
-                  </Td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+        <Panel title="Payments" description="Invoices, failed payments and refunds appear here once a payment provider is connected.">
+          <p className="text-muted-foreground text-sm">No payment provider is connected yet. Plans and statuses are set by admins for now.</p>
         </Panel>
       )}
     </>

@@ -1,24 +1,45 @@
-import Image from "next/image";
 import Link from "next/link";
 
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, HeartHandshake, Megaphone, ShoppingBag } from "lucide-react";
 
 import { DashedLine } from "../dashed-line";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
+/**
+ * The three modules. Rendered as plain markup (no images, no scroll or lazy
+ * animation) so the card is never empty.
+ */
 const items = [
   {
     title: "Marketing: bring customers in",
-    image: "/features/triage-card.svg",
+    status: "Live in beta",
+    live: true,
+    icon: Megaphone,
+    points: [
+      "Comment-to-DM and story replies",
+      "Lead capture inside every automation",
+      "Broadcasts to tags and segments",
+      "Drip sequences and giveaways",
+    ],
+    href: "/signup",
   },
   {
     title: "Sales: sell to them in the chat",
-    image: "/features/cycle-card.svg",
+    status: "Coming soon",
+    live: false,
+    icon: ShoppingBag,
+    points: ["Answers from your product list", "Checkout links in the chat", "Follow-ups on quiet DMs"],
+    href: "/roadmap",
   },
   {
     title: "Support: look after them after the sale",
-    image: "/features/overview-card.svg",
+    status: "Coming soon",
+    live: false,
+    icon: HeartHandshake,
+    points: ["Order and delivery questions", "Returns help", "Handover to you when needed"],
+    href: "/roadmap",
   },
 ];
 
@@ -30,7 +51,7 @@ export const Features = () => {
         <div className="relative flex items-center justify-center">
           <DashedLine className="text-muted-foreground" />
           <span className="bg-muted text-muted-foreground absolute px-3 font-mono text-sm font-medium tracking-wide max-md:hidden">
-            YOU SLEEP. WE SELL.
+            YOU SLEEP. SOJAO WORKS.
           </span>
         </div>
 
@@ -40,54 +61,84 @@ export const Features = () => {
             Three jobs. One AI agent.
           </h2>
           <p className="text-muted-foreground leading-snug">
-            Most small brands pay for three tools: one for marketing, a VA for
-            sales and a helpdesk for support. Sojao does all three, with one
-            memory of every customer.
+            Sojao is being built to bring customers in, sell to them and look
+            after them, with one memory of every customer. Marketing is live in
+            beta today. Sales and Support are coming soon.
           </p>
         </div>
 
         {/* Features Card */}
         <Card className="mt-8 rounded-3xl md:mt-12 lg:mt-20">
           <CardContent className="flex p-0 max-md:flex-col">
-            {items.map((item, i) => (
-              <div key={i} className="flex flex-1 max-md:flex-col">
-                <div className="flex-1 p-4 pe-0! md:p-6">
-                  <div className="relative aspect-[1.28/1] overflow-hidden">
-                    <Image
-                      src={item.image}
-                      alt={`${item.title} interface`}
-                      fill
-                      className="object-cover object-left-top ps-4 pt-2"
-                    />
-                    <div className="from-background absolute inset-0 z-10 bg-linear-to-t via-transparent to-transparent" />
+            {items.map((item, i) => {
+              const Icon = item.icon;
+              const body = (
+                <>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="bg-brand/12 flex size-12 items-center justify-center rounded-2xl">
+                      <Icon className="size-6" />
+                    </span>
+                    <span
+                      className={cn(
+                        "rounded-full px-2.5 py-1 text-xs font-semibold",
+                        item.live ? "bg-brand text-white" : "bg-muted text-muted-foreground border",
+                      )}
+                    >
+                      {item.status}
+                    </span>
                   </div>
-
-                  <Link
-                    href="#"
-                    className={
-                      "group flex items-center justify-between gap-4 pe-4 pt-4 md:pe-6 md:pt-6"
-                    }
-                  >
+                  <ul className="mt-6 flex-1 space-y-2.5 text-sm">
+                    {item.points.map((p) => (
+                      <li
+                        key={p}
+                        className={cn(
+                          "flex items-start gap-2",
+                          !item.live && "text-muted-foreground",
+                        )}
+                      >
+                        <span className="bg-brand mt-1.5 size-1.5 shrink-0 rounded-full" />
+                        {p}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="flex items-center justify-between gap-4 pt-6">
                     <h3 className="font-display max-w-60 text-2xl leading-tight font-bold tracking-tight">
                       {item.title}
                     </h3>
-                    <div className="rounded-full border p-2">
-                      <ChevronRight className="size-6 transition-transform group-hover:translate-x-1 lg:size-9" />
+                    {item.href && (
+                      <span className="rounded-full border p-2">
+                        <ChevronRight className="size-6 transition-transform group-hover:translate-x-1 lg:size-9" />
+                      </span>
+                    )}
+                  </div>
+                </>
+              );
+              return (
+                <div key={item.title} className="flex flex-1 max-md:flex-col">
+                  {item.href ? (
+                    <Link
+                      href={item.href}
+                      aria-label={item.live ? `${item.title}: join the beta` : `${item.title}: see the roadmap`}
+                      className="group flex flex-1 flex-col p-5 md:p-6"
+                    >
+                      {body}
+                    </Link>
+                  ) : (
+                    <div className="flex flex-1 flex-col p-5 md:p-6">{body}</div>
+                  )}
+                  {i < items.length - 1 && (
+                    <div className="relative hidden md:block">
+                      <DashedLine orientation="vertical" />
                     </div>
-                  </Link>
+                  )}
+                  {i < items.length - 1 && (
+                    <div className="relative block md:hidden">
+                      <DashedLine orientation="horizontal" />
+                    </div>
+                  )}
                 </div>
-                {i < items.length - 1 && (
-                  <div className="relative hidden md:block">
-                    <DashedLine orientation="vertical" />
-                  </div>
-                )}
-                {i < items.length - 1 && (
-                  <div className="relative block md:hidden">
-                    <DashedLine orientation="horizontal" />
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
       </div>

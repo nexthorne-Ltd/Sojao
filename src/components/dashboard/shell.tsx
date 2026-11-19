@@ -21,7 +21,6 @@ import {
   LogOut,
   Megaphone,
   Menu,
-  Plus,
   Search,
   Settings,
   ShoppingBag,
@@ -31,35 +30,35 @@ import {
   X,
 } from "lucide-react";
 
+import { AskBar } from "@/components/ask-bar";
 import { NotificationBell } from "@/components/dashboard/notifications";
 import { Logo } from "@/components/logo";
-import { brand, conversations } from "@/lib/dashboard-data";
+import { api } from "@/lib/marketing-api";
+import { initials, SessionProvider, useSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
-
-const unread = conversations.filter((c) => c.unread).length;
-const needsYou = conversations.filter((c) => c.status === "needs-you").length;
 
 type NavItem = {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   badge?: number;
-  live?: boolean;
+  /** Module not live yet: shows a small "Soon" badge and a Coming soon page. */
+  soon?: boolean;
 };
 
 const MAIN: NavItem[] = [
   { href: "/dashboard", label: "Home", icon: House },
-  { href: "/dashboard/inbox", label: "Inbox", icon: Inbox, badge: unread },
-  { href: "/dashboard/live", label: "Live", icon: Cctv, live: true },
+  { href: "/dashboard/inbox", label: "Inbox", icon: Inbox },
   { href: "/dashboard/customers", label: "Customers", icon: Users },
   { href: "/dashboard/marketing", label: "Marketing", icon: Megaphone },
-  { href: "/dashboard/sales", label: "Sales", icon: ShoppingBag },
-  { href: "/dashboard/support", label: "Support", icon: HeartHandshake, badge: needsYou },
-  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/dashboard/sales", label: "Sales", icon: ShoppingBag, soon: true },
+  { href: "/dashboard/support", label: "Support", icon: HeartHandshake, soon: true },
+  { href: "/dashboard/live", label: "Live", icon: Cctv, soon: true },
+  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3, soon: true },
 ];
 const MANAGE: NavItem[] = [
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
-  { href: "/dashboard/billing", label: "Billing", icon: CreditCard },
+  { href: "/dashboard/billing", label: "Billing", icon: CreditCard, soon: true },
 ];
 const BOTTOM: NavItem[] = [
   { href: "/dashboard/account", label: "My profile", icon: UserRound },
@@ -86,11 +85,52 @@ const store = {
 };
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
+  return (
+    <SessionProvider>
+      <Shell>{children}</Shell>
+    </SessionProvider>
+  );
+}
+
+function Shell({ children }: { children: React.ReactNode }) {
+  const { session, error } = useSession();
   const pathname = usePathname();
+  const [unread, setUnread] = useState(0);
+  const [paused, setPaused] = useState<boolean | null>(null);
+  const [pauseErr, setPauseErr] = useState<string | null>(null);
+
+  // Unread chats (sidebar badge) and the brand's pause switch. Refresh the badge every minute.
+  useEffect(() => {
+    if (!session?.workspace) return;
+    const load = () =>
+      api<{ conversations: unknown[] }>("/conversations?filter=unread")
+        .then((r) => setUnread(r.conversations.length))
+        .catch(() => {});
+    void load();
+    const t = setInterval(load, 60_000);
+    void api<{ settings?: { autoRepliesPaused?: boolean } }>("/workspace")
+      .then((w) => setPaused(!!w.settings?.autoRepliesPaused))
+      .catch(() => setPaused(false));
+    return () => clearInterval(t);
+  }, [session?.workspace, pathname]);
+  const live = paused === false;
+  const togglePause = async () => {
+    if (paused === null) return;
+    const next = !paused;
+    if (next && !window.confirm("Pause Sojao? Automations, broadcasts and AI replies stop until you turn it back on. You can still reply yourself from the Inbox.")) return;
+    setPaused(next);
+    setPauseErr(null);
+    try {
+      await api("/workspace/settings", { method: "PATCH", body: { autoRepliesPaused: next } });
+    } catch {
+      setPaused(!next);
+      setPauseErr("Couldn't change it. Try again.");
+    }
+  };
+  const main = MAIN.map((n) => (n.href === "/dashboard/inbox" ? { ...n, badge: unread } : n));
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [banner, setBanner] = useState(true);
-  const [live, setLive] = useState(true);
 
   useEffect(() => {
     setCollapsed(store.get("sojao-sidebar") === "collapsed");
@@ -136,7 +176,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <Logo className={cn("text-[24px]", mini && "lg:hidden")} />
           </Link>
           <button
-            className="text-muted-foreground ml-auto lg:hidden"
+            className="text-muted-foreground -m-2 ml-auto p-2 lg:hidden"
             onClick={() => setOpen(false)}
             aria-label="Close menu"
           >
@@ -150,7 +190,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           <ul className="space-y-1">
-            {MAIN.map((item) => (
+            {main.map((item) => (
               <NavLink key={item.href} item={item} active={item === current} mini={mini} />
             ))}
           </ul>
@@ -188,38 +228,26 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         {/* Plan */}
         <div className={cn("border-t p-4", mini && "lg:px-2")}>
           {mini ? (
-            <Link
-              href="/dashboard/billing"
-              className="bg-primary text-primary-foreground hidden size-11 items-center justify-center rounded-xl lg:mx-auto lg:flex"
-              title="Upgrade"
-              aria-label="Upgrade plan"
+            <span
+              className="bg-brand/15 hidden size-11 items-center justify-center rounded-xl lg:mx-auto lg:flex"
+              title="Beta: free during the beta"
             >
               <Sparkles className="size-5" />
-            </Link>
+            </span>
           ) : null}
-          <div className={cn(mini && "lg:hidden")}>
-            <div className="flex items-center gap-3">
-              <span className="bg-brand/15 flex size-10 shrink-0 items-center justify-center rounded-full">
-                <Sparkles className="size-5" />
-              </span>
-              <div className="min-w-0">
-                <p className="text-sm font-medium">
-                  {brand.plan} plan{" "}
-                  {brand.beta && (
-                    <span className="bg-brand ml-1 rounded px-1 py-0.5 align-middle text-[10px] font-semibold text-white">
-                      BETA
-                    </span>
-                  )}
-                </p>
-                <p className="text-muted-foreground text-xs">Free for your first 3 months</p>
-              </div>
+          <div className={cn("flex items-center gap-3", mini && "lg:hidden")}>
+            <span className="bg-brand/15 flex size-10 shrink-0 items-center justify-center rounded-full">
+              <Sparkles className="size-5" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-sm font-medium">
+                Marketing{" "}
+                <span className="bg-brand ml-1 rounded px-1 py-0.5 align-middle text-[10px] font-semibold text-white">
+                  BETA
+                </span>
+              </p>
+              <p className="text-muted-foreground text-xs">Free during the beta</p>
             </div>
-            <Link
-              href="/dashboard/billing"
-              className="bg-primary text-primary-foreground mt-3 flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium transition-opacity hover:opacity-90"
-            >
-              <Sparkles className="size-4" /> Upgrade to Pro
-            </Link>
           </div>
         </div>
       </aside>
@@ -240,21 +268,27 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <Sparkles className="size-3.5" />
             </span>
             <p className="min-w-0 flex-1 truncate">
-              <span className="font-medium">You&apos;re in the beta.</span>
-              <span className="opacity-75 max-sm:hidden"> Sojao is free for your first 3 months, then 50% off.</span>
+              {session?.announcement ? (
+                <span className="font-medium">{session.announcement}</span>
+              ) : (
+                <>
+                  <span className="font-medium">You&apos;re in the beta.</span>
+                  <span className="opacity-75 max-sm:hidden"> Marketing is live and free during the beta. Sales and Support are coming soon.</span>
+                </>
+              )}
             </p>
             <Link
-              href="/dashboard/billing"
+              href="/dashboard/marketing"
               className="bg-brand shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90"
             >
-              See plans
+              Open Marketing
             </Link>
             <button
               onClick={() => {
                 setBanner(false);
                 store.set("sojao-banner", "hidden");
               }}
-              className="shrink-0 opacity-70 hover:opacity-100"
+              className="-m-2 shrink-0 p-2 opacity-70 hover:opacity-100"
               aria-label="Dismiss banner"
             >
               <X className="size-4" />
@@ -264,7 +298,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
         <header className="bg-background/90 sticky top-0 z-30 flex h-16 items-center gap-3 border-b px-4 backdrop-blur md:px-8">
           <button
-            className="text-muted-foreground lg:hidden"
+            className="text-muted-foreground -m-2 p-2 lg:hidden"
             onClick={() => setOpen(true)}
             aria-label="Open menu"
           >
@@ -282,13 +316,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
                 className="placeholder:text-muted-foreground text-foreground min-w-0 flex-1 bg-transparent outline-none"
               />
             </label>
-            <span className="text-muted-foreground hidden rounded-md border border-dashed px-2 py-1 text-xs md:inline">
-              Sample data
-            </span>
+            {pauseErr && <span className="text-xs text-rose-600">{pauseErr}</span>}
             <button
-              onClick={() => setLive(!live)}
+              onClick={() => void togglePause()}
+              disabled={paused === null}
               className={cn(
-                "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                "flex items-center gap-2 rounded-full border min-h-9 px-3 py-1.5 text-xs font-medium transition-colors",
                 live ? "border-brand/40" : "opacity-70",
               )}
               aria-pressed={live}
@@ -311,9 +344,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             fullBleed ? "" : "mx-auto max-w-6xl px-4 py-6 pb-24 md:px-8 md:py-10 md:pb-24",
           )}
         >
-          {children}
+          {error && !session ? (
+            <p role="alert" className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4 text-sm">
+              {error}
+            </p>
+          ) : (
+            children
+          )}
         </main>
       </div>
+      <AskBar />
     </div>
   );
 }
@@ -338,10 +378,14 @@ function NavLink({ item, active, mini }: { item: NavItem; active: boolean; mini:
         {active && <span className="bg-brand absolute top-2 bottom-2 left-0 w-1 rounded-full" />}
         <Icon className="size-5 shrink-0" />
         <span className={cn("flex-1", mini && "lg:sr-only")}>{item.label}</span>
-        {item.live && (
-          <span className={cn("flex items-center gap-1 text-[10px] font-semibold tracking-wide", mini && "lg:absolute lg:top-1.5 lg:right-2")}>
-            <span className="size-1.5 animate-pulse rounded-full bg-red-500" />
-            <span className={cn(mini && "lg:hidden")}>LIVE</span>
+        {item.soon && (
+          <span
+            className={cn(
+              "bg-muted text-muted-foreground rounded-full border px-1.5 py-0.5 text-[10px] leading-none font-semibold tracking-wide uppercase",
+              mini && "lg:hidden",
+            )}
+          >
+            Soon
           </span>
         )}
         {!!item.badge &&
@@ -359,7 +403,10 @@ function NavLink({ item, active, mini }: { item: NavItem; active: boolean; mini:
 }
 
 function BrandSwitcher({ mini }: { mini: boolean }) {
+  const { session, logout } = useSession();
   const [open, setOpen] = useState(false);
+  const brandName = session?.workspace?.name ?? "…";
+  const planLabel = session?.plan ? (session.plan.beta ? "Beta" : session.plan.name) : "";
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -384,36 +431,40 @@ function BrandSwitcher({ mini }: { mini: boolean }) {
       >
         <span className="relative shrink-0">
           <span className="bg-brand/15 flex size-9 items-center justify-center rounded-full text-xs font-semibold">
-            YB
+            {initials(brandName)}
           </span>
-          <span className="bg-brand absolute -right-1.5 -bottom-1 rounded px-1 text-[9px] font-bold text-white uppercase">
-            {brand.beta ? "Beta" : brand.plan}
-          </span>
+          {planLabel && (
+            <span className="bg-brand absolute -right-1.5 -bottom-1 rounded px-1 text-[9px] font-bold text-white uppercase">{planLabel}</span>
+          )}
         </span>
         <span className={cn("min-w-0 flex-1", mini && "lg:hidden")}>
-          <span className="block truncate text-sm font-medium">{brand.name}</span>
-          <span className="text-muted-foreground block truncate text-xs">{brand.owner}</span>
+          <span className="block truncate text-sm font-medium">{brandName}</span>
+          <span className="text-muted-foreground block truncate text-xs">{session?.user.name ?? ""}</span>
         </span>
         <ChevronDown className={cn("text-muted-foreground size-4", mini && "lg:hidden")} />
       </button>
 
       {open && (
         <div className="bg-popover text-popover-foreground absolute top-full left-3 z-50 mt-1 w-60 rounded-xl border p-1.5 shadow-xl">
-          <p className="text-muted-foreground px-2.5 py-1.5 text-xs">Your brands</p>
-          <button className="hover:bg-accent flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm">
-            <span className="flex-1 truncate text-left">{brand.name}</span>
-            <Check className="size-4" />
-          </button>
-          <button className="text-muted-foreground hover:bg-accent hover:text-foreground flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm">
-            <Plus className="size-4" /> Add another brand
-          </button>
+          <p className="text-muted-foreground truncate px-2.5 py-1.5 text-xs">{session?.user.email}</p>
+          {(session?.workspaces ?? []).map((w) => (
+            <span key={w.id} className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm">
+              <span className="flex-1 truncate text-left">{w.name}</span>
+              {w.id === session?.workspace?.id && <Check className="size-4" />}
+            </span>
+          ))}
+          {session?.user.isPlatformAdmin && (
+            <Link href="/admin" className="text-muted-foreground hover:bg-accent hover:text-foreground flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm">
+              <Settings className="size-4" /> Admin panel
+            </Link>
+          )}
           <div className="my-1 border-t" />
-          <Link
-            href="/login"
+          <button
+            onClick={() => void logout()}
             className="text-muted-foreground hover:bg-accent hover:text-foreground flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm"
           >
             <LogOut className="size-4" /> Log out
-          </Link>
+          </button>
         </div>
       )}
     </div>

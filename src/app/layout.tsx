@@ -2,9 +2,12 @@ import localFont from "next/font/local";
 
 import type { Metadata } from "next";
 
+import { CookieBanner } from "@/components/cookie-banner";
 import { StyleGlideProvider } from "@/components/styleglide-provider";
 import { ThemePicker } from "@/components/theme-picker";
 import { ThemeProvider } from "@/components/theme-provider";
+import { pageMetadata } from "@/lib/seo";
+import { siteConfig, siteUrl } from "@/lib/site-config";
 import "@/styles/globals.css";
 
 const dmSans = localFont({
@@ -72,26 +75,28 @@ const fredoka = localFont({
   display: "swap",
 });
 
+const DESCRIPTION =
+  "Sojao AI is an AI marketing agent for Instagram-first brands. Comment-to-DM, story replies, lead capture and broadcasts on Instagram and Messenger. Marketing is live in beta; Sales and Support are coming soon.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
-    default: "Sojao AI – Your business sleeps. Your customers don't.",
-    template: "%s | Sojao AI",
+    default: `${siteConfig.brandName}: ${siteConfig.tagline}`,
+    template: `%s | ${siteConfig.brandName}`,
   },
-  description:
-    "Never miss a sale in your DMs again. Sojao answers every customer on Instagram, Messenger and WhatsApp like your best salesperson, 24/7.",
+  applicationName: siteConfig.brandName,
   keywords: [
     "Instagram DM automation",
-    "AI sales agent",
-    "WhatsApp AI",
-    "Facebook Messenger AI",
     "comment to DM",
-    "ManyChat alternative",
-    "Shopify AI chat",
-    "small business customer support",
+    "Instagram story reply automation",
+    "Facebook Messenger automation",
+    "lead capture",
+    "AI marketing agent",
+    "small business marketing",
   ],
-  authors: [{ name: "Nexthorne" }],
-  creator: "Nexthorne",
-  publisher: "Nexthorne",
+  authors: [{ name: siteConfig.legalName }],
+  creator: siteConfig.legalName,
+  publisher: siteConfig.legalName,
   robots: {
     index: true,
     follow: true,
@@ -101,33 +106,11 @@ export const metadata: Metadata = {
       { url: "/favicon/favicon.ico", sizes: "48x48" },
       { url: "/favicon/favicon.svg", type: "image/svg+xml" },
       { url: "/favicon/favicon-96x96.png", sizes: "96x96", type: "image/png" },
-      { url: "/favicon/favicon.svg", type: "image/svg+xml" },
-      { url: "/favicon/favicon.ico" },
     ],
     apple: [{ url: "/favicon/apple-touch-icon.png", sizes: "180x180" }],
     shortcut: [{ url: "/favicon/favicon.ico" }],
   },
-  openGraph: {
-    title: "Sojao AI – Your business sleeps. Your customers don't.",
-    description:
-      "Never miss a sale in your DMs again. Sojao answers every customer like your best salesperson, 24/7.",
-    siteName: "Sojao AI",
-    images: [
-      {
-        url: "/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Sojao AI – Your business sleeps. Your customers don't.",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Sojao AI – Your business sleeps. Your customers don't.",
-    description:
-      "Never miss a sale in your DMs again. Sojao answers every customer like your best salesperson, 24/7.",
-    images: ["/og-image.jpg"],
-  },
+  ...pageMetadata({ description: DESCRIPTION, path: "/" }),
 };
 
 export default function RootLayout({
@@ -138,11 +121,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script
-          async
-          crossOrigin="anonymous"
-          src="https://tweakcn.com/live-preview.min.js"
-        />
+        {/* Theme editor preview hook: development only, never loaded for visitors */}
+        {process.env.NODE_ENV === "development" && (
+          <script
+            async
+            crossOrigin="anonymous"
+            src="https://tweakcn.com/live-preview.min.js"
+          />
+        )}
       </head>
       <body className={`${dmSans.variable} ${inter.variable} ${fredoka.variable} antialiased`}>
         <ThemeProvider
@@ -164,6 +150,7 @@ export default function RootLayout({
           <StyleGlideProvider />
           {children}
           <ThemePicker />
+          <CookieBanner />
         </ThemeProvider>
       </body>
     </html>

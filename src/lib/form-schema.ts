@@ -8,11 +8,16 @@ export interface ActionResponse<T = unknown> {
   };
   inputs?: T;
 }
+
 export const formSchema = z.object({
-  name: z.string({ message: "This field is required" }),
-  email: z.string({ message: "This field is required" }),
-  company: z.string({ message: "This field is required" }).optional(),
-  employees: z.string().min(1, "Please select an item").optional(),
-  message: z.string({ message: "This field is required" }),
-  agree: z.literal(true, { message: "This field is required" }),
+  name: z.string().trim().min(2, "Please enter your name."),
+  email: z.string().trim().email("Please enter a valid email address."),
+  company: z.string().trim().max(120).optional(),
+  employees: z.string().optional(),
+  message: z
+    .string()
+    .trim()
+    .min(10, "Please write a few words (at least 10 characters).")
+    .max(2000, "Please keep it under 2,000 characters."),
+  agree: z.literal(true, { message: "Please accept the Privacy Policy and Terms." }),
 });

@@ -1,170 +1,84 @@
-import Image from "next/image";
-import Link from "next/link";
-
-import Marquee from "react-fast-marquee";
+/* eslint-disable @next/next/no-img-element */
+import { Gem, Shirt, ShoppingBag, Sparkles, Store } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-type Company = {
-  name: string;
-  logo: string;
-  width: number;
-  height: number;
-  href: string;
-};
+/**
+ * "Who it's for" strip. We don't show customer logos until we have real,
+ * approved beta brands to show. Photos are free-to-use Unsplash images.
+ */
+const unsplash = (id: string) =>
+  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=600&h=750&q=75`;
+
+const CATEGORIES = [
+  {
+    name: "Fashion",
+    icon: Shirt,
+    image: unsplash("photo-1441984904996-e0b6ba687e04"),
+    alt: "Clothing boutique with hanging racks",
+  },
+  {
+    name: "Beauty",
+    icon: Sparkles,
+    image: unsplash("photo-1608571423902-eed4a5ad8108"),
+    alt: "Amber skincare dropper bottle on a wooden stand",
+  },
+  {
+    name: "Accessories",
+    icon: Gem,
+    image: unsplash("photo-1617038220319-276d3cfab638"),
+    alt: "Gold hoop earrings resting on white stones",
+  },
+  {
+    name: "D2C brands",
+    icon: ShoppingBag,
+    image: unsplash("photo-1617825295690-28ae56c56135"),
+    alt: "Green and pink shipping boxes",
+  },
+  {
+    name: "Instagram sellers",
+    icon: Store,
+    image: unsplash("photo-1753164597612-5e71b83fda91"),
+    alt: "Small business owner on the phone while working on a laptop",
+  },
+];
 
 export const Logos = () => {
-  const topRowCompanies = [
-    {
-      name: "[Beta brand]",
-      logo: "/logos/mercury.svg",
-      width: 143,
-      height: 26,
-      href: "#",
-    },
-    {
-      name: "[Beta brand]",
-      logo: "/logos/watershed.svg",
-      width: 154,
-      height: 31,
-      href: "#",
-    },
-    {
-      name: "[Beta brand]",
-      logo: "/logos/retool.svg",
-      width: 113,
-      height: 22,
-      href: "#",
-    },
-    {
-      name: "[Beta brand]",
-      logo: "/logos/descript.svg",
-      width: 112,
-      height: 27,
-      href: "#",
-    },
-  ];
-
-  const bottomRowCompanies = [
-    {
-      name: "[Beta brand]",
-      logo: "/logos/perplexity.svg",
-      width: 141,
-      height: 32,
-      href: "#",
-    },
-    {
-      name: "[Beta brand]",
-      logo: "/logos/monzo.svg",
-      width: 104,
-      height: 18,
-      href: "#",
-    },
-    {
-      name: "[Beta brand]",
-      logo: "/logos/ramp.svg",
-      width: 105,
-      height: 28,
-      href: "#",
-    },
-    {
-      name: "[Beta brand]",
-      logo: "/logos/raycast.svg",
-      width: 128,
-      height: 33,
-      href: "#",
-    },
-    {
-      name: "[Beta brand]",
-      logo: "/logos/arc.svg",
-      width: 90,
-      height: 28,
-      href: "#",
-    },
-  ];
-
   return (
-    <section className="pb-28 lg:pb-32 overflow-hidden">
-      <div className="container space-y-10 lg:space-y-16">
-        <div className="text-center">
-          <h2 className="mb-4 text-xl text-balance md:text-2xl lg:text-3xl">
-            Built for Instagram-first brands.
-            <br className="max-md:hidden" />
-            <span className="text-muted-foreground">
-              Fashion, beauty, accessories and D2C brands. [Beta brand logos go
-              here]
-            </span>
-          </h2>
-        </div>
-
-        <div className="flex w-full flex-col items-center gap-8">
-          {/* Top row - 4 logos */}
-          <LogoRow companies={topRowCompanies} gridClassName="grid-cols-4" />
-
-          {/* Bottom row - 5 logos */}
-          <LogoRow
-            companies={bottomRowCompanies}
-            gridClassName="grid-cols-5"
-            direction="right"
-          />
-        </div>
+    <section className="overflow-hidden pb-28 lg:pb-32">
+      <div className="container space-y-8 text-center lg:space-y-10">
+        <h2 className="text-xl text-balance md:text-2xl lg:text-3xl">
+          Built for Instagram-first brands.
+          <br className="max-md:hidden" />{" "}
+          <span className="text-muted-foreground">
+            Small teams that answer their own DMs.
+          </span>
+        </h2>
+        <ul className="mx-auto grid max-w-6xl grid-cols-2 gap-3 md:grid-cols-5 md:gap-4">
+          {CATEGORIES.map(({ name, icon: Icon, image, alt }, i) => (
+            <li
+              key={name}
+              className={cn(
+                "group bg-muted relative aspect-[4/5] overflow-hidden rounded-3xl border shadow-sm",
+                i === CATEGORIES.length - 1 && "max-md:col-span-2 max-md:aspect-[8/5]",
+              )}
+            >
+              <img
+                src={image}
+                alt={alt}
+                loading="lazy"
+                decoding="async"
+                className="absolute inset-0 size-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/15 to-transparent" />
+              <span className="absolute inset-x-3 bottom-3 flex items-center gap-2 rounded-2xl border border-white/20 bg-black/30 px-3 py-1.5 text-left text-sm leading-tight font-medium text-white backdrop-blur-md md:max-lg:text-xs">
+                <Icon className="size-4 shrink-0" />
+                <span>{name}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
-  );
-};
-
-type LogoRowProps = {
-  companies: Company[];
-  gridClassName: string;
-  direction?: "left" | "right";
-};
-
-const LogoRow = ({ companies, gridClassName, direction }: LogoRowProps) => {
-  return (
-    <>
-      {/* Desktop static version */}
-      <div className="hidden md:block">
-        <div
-          className={cn(
-            "grid items-center justify-items-center gap-x-20 lg:gap-x-28",
-            gridClassName,
-          )}
-        >
-          {companies.map((company, index) => (
-            <Link href={company.href} target="_blank" key={index}>
-              <Image
-                src={company.logo}
-                alt={`${company.name} logo`}
-                width={company.width}
-                height={company.height}
-                className="dark:opacity/100 object-contain opacity-50 transition-opacity hover:opacity-70 dark:invert"
-              />
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Mobile marquee version */}
-      <div className="md:hidden">
-        <Marquee direction={direction} pauseOnHover>
-          {companies.map((company, index) => (
-            <Link
-              href={company.href}
-              target="_blank"
-              key={index}
-              className="mx-8 inline-block transition-opacity hover:opacity-70"
-            >
-              <Image
-                src={company.logo}
-                alt={`${company.name} logo`}
-                width={company.width}
-                height={company.height}
-                className="object-contain"
-              />
-            </Link>
-          ))}
-        </Marquee>
-      </div>
-    </>
   );
 };

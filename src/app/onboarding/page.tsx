@@ -1,27 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { ArrowLeft, ArrowRight, Check, Rocket, Store, Upload } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Rocket, Store } from "lucide-react";
 
 import { Badge, ChannelIcon, Toggle } from "@/components/dashboard/ui";
 import { Logo } from "@/components/logo";
 import { SectionMascot } from "@/components/section-mascot";
 import { Button } from "@/components/ui/button";
-import type { Channel } from "@/lib/dashboard-data";
+import { api, ApiError, type IgAccount } from "@/lib/marketing-api";
+import { SessionProvider, useSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
-const STEPS = [
-  "Your brand",
-  "Connect apps",
-  "Connect store",
-  "Teach Sojao",
-  "Pick a plan",
-  "Go live",
-] as const;
+const STEPS = ["Your brand", "Connect Instagram", "Your store", "Teach Sojao", "Your plan", "Go live"] as const;
 
 const CATEGORIES = [
   { name: "Fashion brand", live: true },
@@ -36,39 +30,75 @@ const CATEGORIES = [
   { name: "Creator", live: false },
 ];
 
-const PLANS = [
-  { name: "Starter", price: 29, text: "All 3 pillars, basic version" },
-  { name: "Growth", price: 79, text: "Broadcasts, drips, follow-ups, upsells, returns" },
-  { name: "Pro", price: 199, text: "Giveaways, growth tools, ads, segments, history" },
-];
-
 const inputCls =
   "bg-background focus-visible:ring-ring/50 h-11 w-full rounded-xl border px-3 text-sm outline-none focus-visible:ring-[3px]";
 
 export default function OnboardingPage() {
+  return (
+    <SessionProvider>
+      <Onboarding />
+    </SessionProvider>
+  );
+}
+
+function Onboarding() {
   const router = useRouter();
+  const { session } = useSession();
   const [step, setStep] = useState(0);
   const [brandName, setBrandName] = useState("");
   const [category, setCategory] = useState<string | null>(null);
-  const [channels, setChannels] = useState<Record<Channel, boolean>>({
-    instagram: false,
-    messenger: false,
-    whatsapp: false,
-  });
-  const [store, setStore] = useState<"shopify" | "csv" | "none" | null>(null);
+  const [ig, setIg] = useState<IgAccount | null | undefined>(undefined);
   const [tone, setTone] = useState("Friendly");
-  const [plan, setPlan] = useState("Growth");
+  const [shipping, setShipping] = useState("");
+  const [returns, setReturns] = useState("");
+  const [handOverRefunds, setHandOverRefunds] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
 
-  const canNext = [
-    brandName.trim().length > 0 && !!category,
-    Object.values(channels).some(Boolean),
-    store !== null,
-    true,
-    true,
-    true,
-  ][step];
+  useEffect(() => {
+    if (session?.workspace && !brandName) setBrandName(session.workspace.name);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.workspace]);
+  useEffect(() => {
+    void api<{ accounts: IgAccount[] }>("/instagram/accounts")
+      .then((r) => setIg(r.accounts.find((a) => a.status === "active") ?? null))
+      .catch(() => setIg(null));
+    // Back from Instagram's connect screen: jump to the connect step.
+    if (new URLSearchParams(window.location.search).get("step") === "connect") setStep(1);
+  }, []);
 
-  const next = () => (step < STEPS.length - 1 ? setStep(step + 1) : router.push("/dashboard"));
+  const canNext = [brandName.trim().length > 0 && !!category, true, true, true, true, true][step];
+
+  /** Saves what this step collected, then moves on. */
+  const next = async () => {
+    setErr(null);
+    setBusy(true);
+    try {
+      if (step === 0) await api("/workspace", { method: "PATCH", body: { name: brandName.trim() } });
+      if (step === 3) {
+        const policies = [shipping.trim() && `Shipping: ${shipping.trim()}`, returns.trim() && `Returns: ${returns.trim()}`].filter(Boolean).join("\n");
+        const current = await api<{ handoverWords?: string[] }>("/brand-profile");
+        const words = new Set([...(current.handoverWords ?? ["human", "agent"]), ...(handOverRefunds ? ["refund", "custom order"] : [])]);
+        await api("/brand-profile", { method: "PUT", body: { brandName: brandName.trim(), tone, ...(policies ? { policies } : {}), handoverWords: [...words].slice(0, 20) } });
+      }
+      if (step < STEPS.length - 1) setStep(step + 1);
+      else router.push("/dashboard");
+    } catch (e) {
+      setErr(e instanceof ApiError ? e.readable : "Couldn't save. Try again.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const connectInstagram = async () => {
+    setErr(null);
+    try {
+      const { url } = await api<{ url: string }>("/instagram/connect", { method: "POST" });
+      window.location.assign(url);
+    } catch (e) {
+      setErr(e instanceof ApiError ? e.readable : "Couldn't start the Instagram connection.");
+    }
+  };
 
   return (
     <div className="bg-muted/40 min-h-screen">
@@ -140,33 +170,32 @@ export default function OnboardingPage() {
           )}
 
           {step === 1 && (
-            <Step title="Connect your apps" text="Sojao answers DMs where your customers already are. Connect at least one.">
+            <Step title="Connect Instagram" text="Sojao runs your marketing in your Instagram DMs. You can also do this later in Settings.">
               <div className="space-y-3">
-                {(
-                  [
-                    ["instagram", "DMs, comments, story replies and mentions"],
-                    ["messenger", "Messages to your Facebook Page"],
-                    ["whatsapp", "Chats, order updates and broadcasts"],
-                  ] as [Channel, string][]
-                ).map(([ch, text]) => (
-                  <div key={ch} className="flex items-center gap-4 rounded-2xl border p-4">
+                <div className="flex items-center gap-4 rounded-2xl border p-4">
+                  <ChannelIcon channel="instagram" className="size-7" />
+                  <div className="flex-1">
+                    <p className="font-medium">Instagram</p>
+                    <p className="text-muted-foreground text-sm">{ig ? `Connected as @${ig.username}` : "DMs, comments, story replies and mentions"}</p>
+                  </div>
+                  {ig ? (
+                    <Badge tone="good">
+                      <Check className="size-3" /> Connected
+                    </Badge>
+                  ) : (
+                    <Button onClick={() => void connectInstagram()} disabled={ig === undefined}>
+                      Connect
+                    </Button>
+                  )}
+                </div>
+                {(["messenger", "whatsapp"] as const).map((ch) => (
+                  <div key={ch} className="flex items-center gap-4 rounded-2xl border p-4 opacity-70">
                     <ChannelIcon channel={ch} className="size-7" />
                     <div className="flex-1">
-                      <p className="font-medium capitalize">{ch === "whatsapp" ? "WhatsApp" : ch}</p>
-                      <p className="text-muted-foreground text-sm">{text}</p>
+                      <p className="font-medium capitalize">{ch}</p>
+                      <p className="text-muted-foreground text-sm">Not available yet</p>
                     </div>
-                    <Button
-                      variant={channels[ch] ? "outline" : "default"}
-                      onClick={() => setChannels({ ...channels, [ch]: !channels[ch] })}
-                    >
-                      {channels[ch] ? (
-                        <>
-                          <Check className="size-4" /> Connected
-                        </>
-                      ) : (
-                        "Connect"
-                      )}
-                    </Button>
+                    <Badge>Soon</Badge>
                   </div>
                 ))}
               </div>
@@ -174,36 +203,20 @@ export default function OnboardingPage() {
           )}
 
           {step === 2 && (
-            <Step title="Connect your store" text="Sojao answers price, size, stock and order questions from your real store.">
-              <div className="grid gap-3 md:grid-cols-3">
-                <Choice
-                  active={store === "shopify"}
-                  onClick={() => setStore("shopify")}
-                  icon={<Store className="size-5" />}
-                  title="Shopify"
-                  text="Products, stock and live orders"
-                />
-                <Choice
-                  active={store === "csv"}
-                  onClick={() => setStore("csv")}
-                  icon={<Upload className="size-5" />}
-                  title="Upload a list"
-                  text="CSV with name, price, sizes and stock"
-                />
-                <Choice
-                  active={store === "none"}
-                  onClick={() => setStore("none")}
-                  icon={<ArrowRight className="size-5" />}
-                  title="Do it later"
-                  text="Sojao can still answer general questions"
-                />
+            <Step title="Your store" text="Optional. Marketing automations work without it.">
+              <div className="bg-muted/40 flex items-start gap-4 rounded-2xl border p-5">
+                <span className="bg-brand/12 flex size-10 shrink-0 items-center justify-center rounded-xl">
+                  <Store className="size-5" />
+                </span>
+                <div>
+                  <p className="flex items-center gap-2 font-semibold">
+                    Shopify or a product list
+                  </p>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    Connect Shopify or import a CSV later in Marketing → Shop tools, so Sojao can answer price and stock questions and match sales to Instagram. Press Continue for now.
+                  </p>
+                </div>
               </div>
-              {store === "shopify" && (
-                <label className="mt-5 block space-y-1.5">
-                  <span className="text-sm font-medium">Your Shopify store address</span>
-                  <input placeholder="yourbrand.myshopify.com" className={inputCls} />
-                </label>
-              )}
             </Step>
           )}
 
@@ -221,48 +234,35 @@ export default function OnboardingPage() {
                 </label>
                 <label className="block space-y-1.5">
                   <span className="text-sm font-medium">Shipping</span>
-                  <textarea rows={2} placeholder="e.g. Free shipping over $75. 2–4 business days." className={cn(inputCls, "h-auto py-2.5")} />
+                  <textarea rows={2} value={shipping} onChange={(e) => setShipping(e.target.value)} maxLength={1000} placeholder="e.g. Free shipping over $75. 2–4 business days." className={cn(inputCls, "h-auto py-2.5")} />
                 </label>
                 <label className="block space-y-1.5">
                   <span className="text-sm font-medium">Returns</span>
-                  <textarea rows={2} placeholder="e.g. Free returns within 30 days." className={cn(inputCls, "h-auto py-2.5")} />
+                  <textarea rows={2} value={returns} onChange={(e) => setReturns(e.target.value)} maxLength={1000} placeholder="e.g. Free returns within 30 days." className={cn(inputCls, "h-auto py-2.5")} />
                 </label>
                 <div className="flex items-center justify-between rounded-xl border p-3 text-sm">
                   <span>Hand refunds and custom orders to me</span>
-                  <Toggle defaultOn label="Hand refunds and custom orders to me" />
+                  <Toggle defaultOn={handOverRefunds} onChange={setHandOverRefunds} label="Hand refunds and custom orders to me" />
                 </div>
               </div>
             </Step>
           )}
 
           {step === 4 && (
-            <Step title="Pick a plan" text="You're joining the beta: your first 3 months are free, then 50% off as a founding brand.">
-              <div className="grid gap-3 md:grid-cols-3">
-                {PLANS.map((p) => (
-                  <button
-                    key={p.name}
-                    type="button"
-                    onClick={() => setPlan(p.name)}
-                    className={cn(
-                      "rounded-2xl border p-5 text-left transition-colors",
-                      plan === p.name ? "border-primary bg-primary/10" : "hover:bg-accent",
-                    )}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">{p.name}</span>
-                      {plan === p.name && <Check className="size-4" />}
-                    </div>
-                    <p className="font-display mt-2 text-2xl">
-                      ${p.price}
-                      <span className="text-muted-foreground text-sm font-normal"> / month</span>
-                    </p>
-                    <p className="text-muted-foreground mt-2 text-sm">{p.text}</p>
-                  </button>
-                ))}
+            <Step title="Your plan" text="No card needed.">
+              <div className="bg-muted/40 flex items-start gap-4 rounded-2xl border p-5">
+                <span className="bg-brand/12 flex size-10 shrink-0 items-center justify-center rounded-xl">
+                  <Check className="size-5" />
+                </span>
+                <div>
+                  <p className="font-semibold">
+                    {session?.plan ? `${session.plan.name}${session.plan.beta ? " · Beta" : ""}` : "Free trial"}
+                  </p>
+                  <p className="text-muted-foreground mt-1 text-sm">
+                    {session?.plan?.trialEndsAt ? `Free until ${new Date(session.plan.trialEndsAt).toLocaleDateString()}. ` : ""}Nothing is charged and no card is needed.
+                  </p>
+                </div>
               </div>
-              <p className="text-muted-foreground mt-4 text-xs">
-                No card needed during the beta. WhatsApp marketing message fees from Meta are billed at cost.
-              </p>
             </Step>
           )}
 
@@ -275,10 +275,10 @@ export default function OnboardingPage() {
               </p>
               <ul className="mx-auto mt-6 max-w-sm space-y-2 text-left text-sm">
                 {[
-                  "Sojao answers every new DM, day and night",
+                  "Your marketing automations run day and night",
                   "Anything it isn't sure about comes to you",
                   `It talks in a ${tone.toLowerCase()} tone`,
-                  `You're on ${plan}, free for 3 months`,
+                  ig ? `Connected to @${ig.username}` : "Connect Instagram in Settings to start",
                 ].map((t) => (
                   <li key={t} className="flex items-center gap-2">
                     <Check className="text-brand size-4 shrink-0" /> {t}
@@ -288,6 +288,7 @@ export default function OnboardingPage() {
             </div>
           )}
 
+          {err && <p role="alert" className="mt-6 text-sm text-rose-600">{err}</p>}
           {/* Nav */}
           <div className="mt-10 flex items-center justify-between gap-3 border-t pt-6">
             <Button variant="ghost" onClick={() => setStep(step - 1)} disabled={step === 0}>
@@ -296,7 +297,7 @@ export default function OnboardingPage() {
             <span className="text-muted-foreground text-xs">
               Step {step + 1} of {STEPS.length}
             </span>
-            <Button onClick={next} disabled={!canNext}>
+            <Button onClick={() => void next()} disabled={!canNext || busy}>
               {step === STEPS.length - 1 ? (
                 <>
                   <Rocket className="size-4" /> Go live
@@ -321,34 +322,5 @@ function Step({ title, text, children }: { title: string; text: string; children
       <p className="text-muted-foreground mt-2 mb-8">{text}</p>
       {children}
     </div>
-  );
-}
-
-function Choice({
-  active,
-  onClick,
-  icon,
-  title,
-  text,
-}: {
-  active: boolean;
-  onClick: () => void;
-  icon: React.ReactNode;
-  title: string;
-  text: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "rounded-2xl border p-5 text-left transition-colors",
-        active ? "border-primary bg-primary/10" : "hover:bg-accent",
-      )}
-    >
-      <span className="bg-brand/12 flex size-10 items-center justify-center rounded-xl">{icon}</span>
-      <p className="mt-3 font-semibold">{title}</p>
-      <p className="text-muted-foreground mt-1 text-sm">{text}</p>
-    </button>
   );
 }

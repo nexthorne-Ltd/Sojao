@@ -4,8 +4,9 @@ import { useState } from "react";
 
 import { FaFacebookMessenger, FaInstagram, FaWhatsapp } from "react-icons/fa";
 
-import type { Channel } from "@/lib/dashboard-data";
 import { cn } from "@/lib/utils";
+
+export type Channel = "instagram" | "messenger" | "whatsapp";
 
 /* ---------- Page header ---------- */
 export function PageHeader({
@@ -307,12 +308,14 @@ export function Th({
 export function Td({
   children,
   className,
+  colSpan,
 }: {
   children?: React.ReactNode;
   className?: string;
+  colSpan?: number;
 }) {
   return (
-    <td className={cn("border-b px-5 py-3 align-middle", className)}>
+    <td colSpan={colSpan} className={cn("border-b px-5 py-3 align-middle", className)}>
       {children}
     </td>
   );

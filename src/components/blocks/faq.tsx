@@ -13,19 +13,19 @@ const categories = [
     title: "Getting started",
     questions: [
       {
-        question: "How long does setup take?",
+        question: "What can Sojao do today?",
         answer:
-          "About 10 minutes. Connect Instagram or WhatsApp, connect your store, and go live. There are no flows to build.",
+          "Marketing. Sojao runs Comment-to-DM, story reply, mention and keyword automations, captures leads in the chat, and sends broadcasts and drip messages to your tags and segments. Sales and Support are coming soon.",
       },
       {
-        question: "Do I need Shopify?",
+        question: "How do I set it up?",
         answer:
-          "No. Sojao works with or without Shopify. If you use Shopify, Sojao can also answer order and delivery questions from your live store data.",
+          "Connect Instagram or Messenger, tell Sojao about your brand and tone of voice, and turn on a ready-made automation.",
       },
       {
         question: "Which apps does Sojao work on?",
         answer:
-          "Instagram, Facebook Messenger and WhatsApp. Sojao answers your customers on all three, day and night.",
+          "Instagram and Facebook Messenger. WhatsApp is coming soon.",
       },
     ],
   },
@@ -33,14 +33,13 @@ const categories = [
     title: "Pricing and the beta",
     questions: [
       {
-        question: "Can I try Sojao for free?",
+        question: "Is Sojao free?",
         answer:
-          "Yes. Early brands in our beta get the first 3 months free, then a 50% founding discount.",
+          "Yes. Sojao is free during the beta and nothing is charged. Pricing is coming soon.",
       },
       {
-        question: "Is there a yearly plan?",
-        answer:
-          "Yes. Pay yearly and you get 2 months free. WhatsApp marketing message fees from Meta are billed at cost.",
+        question: "Do I need a card to join the beta?",
+        answer: "No.",
       },
     ],
   },
@@ -48,19 +47,19 @@ const categories = [
     title: "How Sojao works",
     questions: [
       {
-        question: "How is Sojao different from ManyChat?",
+        question: "Does Sojao follow Instagram's rules?",
         answer:
-          "ManyChat only brings customers in, and you build every flow by hand. Sojao brings them in, sells to them, and looks after them after the sale. It understands your customers by itself, so there is nothing to build.",
+          "Yes. Sojao sends one private reply per comment within 7 days, only sends promos to people who messaged you in the last 24 hours, stays within Instagram's sending limits, and stops marketing messages when someone writes “stop”.",
       },
       {
-        question: "What if Sojao doesn't know an answer?",
+        question: "What happens to my customers' messages?",
         answer:
-          "It hands the chat to you. Sojao learns from every reply you send, so it gets better over time.",
+          "Sojao reads and replies to messages and comments only on your behalf, to run your automations. See our Privacy Policy for the details.",
       },
       {
         question: "Who is Sojao for?",
         answer:
-          "Small Instagram-first brands with 1 to 10 people, mainly in fashion, beauty and accessories. If you answer your own DMs and lose sales at night, Sojao is for you.",
+          "Small Instagram-first brands, mainly in fashion, beauty and accessories, where the owner answers the DMs and loses leads at night.",
       },
     ],
   },

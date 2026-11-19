@@ -7,6 +7,7 @@ import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
+import { SHOW_PRICING } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 
 const plans = [
@@ -57,7 +58,80 @@ const plans = [
   },
 ];
 
-export const Pricing = ({ className }: { className?: string }) => {
+const BETA_INCLUDED = [
+  "Comment-to-DM, story replies, mentions and keywords",
+  "Lead capture and CSV export",
+  "Tags, segments and broadcasts",
+  "Drip sequences, giveaways and growth tools",
+  "Instagram and Messenger",
+];
+
+const COMING_SOON = ["Sales module", "Support module", "WhatsApp"];
+
+/**
+ * Pricing section. While SHOW_PRICING is false (see lib/site-config.ts) it
+ * shows "Free during beta, pricing coming soon" and no prices.
+ */
+export const Pricing = ({ className }: { className?: string }) =>
+  SHOW_PRICING ? <PlanPricing className={className} /> : <BetaPricing className={className} />;
+
+function BetaPricing({ className }: { className?: string }) {
+  return (
+    <section id="pricing" className={cn("py-28 lg:py-32", className)}>
+      <div className="container max-w-5xl">
+        <div className="space-y-4 text-center">
+          <h2 className="text-2xl tracking-tight md:text-4xl lg:text-5xl">
+            Free during the beta.
+          </h2>
+          <p className="text-muted-foreground mx-auto max-w-xl leading-snug text-balance">
+            Pricing is coming soon. During the beta nothing is charged and no
+            card is needed.
+          </p>
+        </div>
+
+        <div className="mt-8 grid items-start gap-5 text-start md:mt-12 md:grid-cols-[1.4fr_1fr] lg:mt-20">
+          <Card className="outline-primary outline-4">
+            <CardContent className="flex flex-col gap-6 px-6 py-5">
+              <div className="space-y-1">
+                <h3 className="text-foreground font-semibold">Beta: Marketing</h3>
+                <p className="text-muted-foreground text-lg font-medium">Free during the beta</p>
+              </div>
+              <ul className="space-y-3">
+                {BETA_INCLUDED.map((f) => (
+                  <li key={f} className="text-muted-foreground flex items-center gap-1.5">
+                    <Check className="size-5 shrink-0" />
+                    <span className="text-sm">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button className="w-fit" asChild>
+                <a href="/signup">Join the beta</a>
+              </Button>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="flex flex-col gap-4 px-6 py-5">
+              <h3 className="text-foreground font-semibold">Coming soon</h3>
+              <ul className="space-y-3">
+                {COMING_SOON.map((f) => (
+                  <li key={f} className="text-muted-foreground flex items-center gap-2 text-sm">
+                    <span className="bg-muted rounded-full border px-1.5 py-0.5 text-[10px] font-semibold uppercase">
+                      Soon
+                    </span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/** Plan cards with prices. Only rendered when SHOW_PRICING is true. */
+function PlanPricing({ className }: { className?: string }) {
   const [isAnnual, setIsAnnual] = useState(false);
 
   return (
@@ -68,8 +142,7 @@ export const Pricing = ({ className }: { className?: string }) => {
             Simple pricing. Nothing to build.
           </h2>
           <p className="text-muted-foreground mx-auto max-w-xl leading-snug text-balance">
-            Every plan includes marketing, sales and support. Pay yearly and
-            get 2 months free.
+            Every plan includes Marketing. Sales and Support are coming soon.
           </p>
         </div>
 
@@ -132,11 +205,9 @@ export const Pricing = ({ className }: { className?: string }) => {
         </div>
 
         <p className="text-muted-foreground mx-auto mt-8 max-w-2xl text-center text-sm text-balance">
-          Beta: early brands get the first 3 months free, then a 50% founding
-          discount. WhatsApp marketing message fees from Meta are billed at
-          cost.
+          Prices are not final yet.
         </p>
       </div>
     </section>
   );
-};
+}

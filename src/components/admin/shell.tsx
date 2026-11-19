@@ -10,10 +10,10 @@ import {
   CheckCircle2,
   CreditCard,
   History,
+  Mail,
   LayoutDashboard,
   Layers,
   Menu,
-  RotateCcw,
   Settings,
   ShieldCheck,
   Users,
@@ -31,6 +31,7 @@ const NAV: NavItem[] = [
   { href: "/admin/users", label: "Users", icon: Users, badge: "trial" },
   { href: "/admin/subscriptions", label: "Subscriptions", icon: CreditCard, badge: "pastdue" },
   { href: "/admin/plans", label: "Plans", icon: Layers },
+  { href: "/admin/messages", label: "Messages", icon: Mail },
   { href: "/admin/activity", label: "Activity log", icon: History },
   { href: "/admin/settings", label: "Platform settings", icon: Settings },
 ];
@@ -46,13 +47,25 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 function ShellInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const { users, settings, toast, reset } = useAdmin();
+  const { me, accounts, settings, toast, denied, error } = useAdmin();
   useEffect(() => setOpen(false), [pathname]);
 
   const counts = {
-    trial: users.filter((u) => u.status === "trial").length,
-    pastdue: users.filter((u) => u.status === "past_due").length,
+    trial: (accounts ?? []).filter((a) => a.sub?.status === "trial").length,
+    pastdue: (accounts ?? []).filter((a) => a.sub?.status === "past_due").length,
   };
+
+  if (denied)
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 p-6 text-center">
+        <ShieldCheck className="size-8" />
+        <p className="text-lg font-semibold">Admins only</p>
+        <p className="text-muted-foreground max-w-sm text-sm">Your account can&apos;t open the Sojao admin panel.</p>
+        <Link href="/dashboard" className="text-sm font-medium underline underline-offset-4">
+          Back to your dashboard
+        </Link>
+      </div>
+    );
 
   const current =
     NAV.find((n) => (n.href === "/admin" ? pathname === "/admin" : pathname.startsWith(n.href))) ?? NAV[0];
@@ -116,12 +129,6 @@ function ShellInner({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="space-y-1 border-t px-3 py-3">
-          <button
-            onClick={reset}
-            className="text-muted-foreground hover:bg-accent hover:text-foreground flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm"
-          >
-            <RotateCcw className="size-4" /> Reset sample data
-          </button>
           <Link
             href="/dashboard"
             className="text-muted-foreground hover:bg-accent hover:text-foreground flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm"
@@ -135,8 +142,8 @@ function ShellInner({ children }: { children: React.ReactNode }) {
             <ShieldCheck className="size-4" />
           </span>
           <div className="min-w-0">
-            <p className="truncate text-sm font-medium">Super admin</p>
-            <p className="text-muted-foreground truncate text-xs">Full access</p>
+            <p className="truncate text-sm font-medium">{me?.name ?? "…"}</p>
+            <p className="text-muted-foreground truncate text-xs capitalize">{me ? `${me.role} · ${me.email}` : ""}</p>
           </div>
         </div>
       </aside>
@@ -146,7 +153,7 @@ function ShellInner({ children }: { children: React.ReactNode }) {
       )}
 
       <div className="lg:pl-64">
-        {settings.maintenance && (
+        {settings?.maintenance && (
           <div className="flex h-10 items-center justify-center gap-2 bg-amber-500 px-4 text-sm font-medium text-black">
             Maintenance mode is ON. Customers can&apos;t log in.
             <Link href="/admin/settings" className="underline">
@@ -160,22 +167,21 @@ function ShellInner({ children }: { children: React.ReactNode }) {
           </button>
           <p className="font-display truncate text-xl font-semibold tracking-tight md:text-2xl">{current.label}</p>
           <div className="ml-auto flex items-center gap-2">
-            <span className="text-muted-foreground hidden rounded-md border border-dashed px-2 py-1 text-xs md:inline">
-              Sample data
-            </span>
             <span
               className={cn(
                 "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium",
-                settings.signupsOpen ? "border-emerald-500/40" : "opacity-70",
+                settings?.signupsOpen ? "border-emerald-500/40" : "opacity-70",
               )}
             >
-              <span className={cn("size-2 rounded-full", settings.signupsOpen ? "bg-emerald-500" : "bg-muted-foreground")} />
-              <span className="max-sm:hidden">{settings.signupsOpen ? "Signups open" : "Signups closed"}</span>
+              <span className={cn("size-2 rounded-full", settings?.signupsOpen ? "bg-emerald-500" : "bg-muted-foreground")} />
+              <span className="max-sm:hidden">{settings?.signupsOpen ? "Signups open" : "Signups closed"}</span>
             </span>
           </div>
         </header>
 
-        <main className="mx-auto max-w-6xl px-4 py-6 pb-24 md:px-8 md:py-10">{children}</main>
+        <main className="mx-auto max-w-6xl px-4 py-6 pb-24 md:px-8 md:py-10">
+          {error ? <p className="rounded-xl border border-rose-500/30 bg-rose-500/5 p-4 text-sm">{error}</p> : !me ? <p className="text-muted-foreground text-sm">Loading…</p> : children}
+        </main>
       </div>
 
       {toast && (

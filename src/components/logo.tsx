@@ -1,3 +1,4 @@
+import { siteConfig } from "@/lib/site-config";
 import { cn } from "@/lib/utils";
 
 /**
@@ -9,13 +10,14 @@ import { cn } from "@/lib/utils";
 export function Logo({ className }: { className?: string }) {
   return (
     <span
-      aria-label="Sojao AI"
-      role="img"
       className={cn(
         "font-logo inline-flex items-baseline leading-none font-semibold tracking-tight whitespace-nowrap select-none",
         className,
       )}
     >
+      {/* Real text for screen readers, search engines and copy/paste. The
+          visual wordmark below swaps the "o" for the sleepy face. */}
+      <span className="sr-only">{siteConfig.brandName}</span>
       <span aria-hidden className="text-logo-text">
         s
       </span>

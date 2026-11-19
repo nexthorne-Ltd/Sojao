@@ -213,7 +213,7 @@ export function GlobalStats() {
                 </h2>
                 <div className="mt-8">
                   <Button className="rounded-full px-5" asChild>
-                    <a href="/#feature-modern-teams">See how it works</a>
+                    <a href="/#how-it-works">See how it works</a>
                   </Button>
                 </div>
               </div>
@@ -224,14 +224,14 @@ export function GlobalStats() {
                     <span className="bg-brand absolute inline-flex size-full animate-ping rounded-full opacity-60" />
                     <span className="bg-brand relative inline-flex size-2 rounded-full" />
                   </span>
-                  Always on · Instagram, Messenger and WhatsApp
+                  Always on · Instagram and Messenger
                 </p>
                 <p className="font-display mt-4 text-5xl tracking-tight md:text-6xl">
                   24/7
                 </p>
                 <p className="text-muted-foreground mt-3 text-sm">
-                  Every DM answered, day and night. Even when you&apos;re
-                  asleep.
+                  Your marketing automations run day and night. Even when
+                  you&apos;re asleep.
                 </p>
               </div>
             </div>

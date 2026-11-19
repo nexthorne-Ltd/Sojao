@@ -1,136 +1,130 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { Check, Moon } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 
-import { Avatar, PageHeader, Panel, Toggle } from "@/components/dashboard/ui";
+import { Avatar, PageHeader, Panel } from "@/components/dashboard/ui";
 import { Button } from "@/components/ui/button";
-import { brand } from "@/lib/dashboard-data";
+import { api, ApiError } from "@/lib/marketing-api";
+import { useSession } from "@/lib/session";
 import { cn } from "@/lib/utils";
 
-const inputCls =
-  "bg-background focus-visible:ring-ring/50 h-10 w-full rounded-xl border px-3 text-sm outline-none focus-visible:ring-[3px]";
+const inputCls = "bg-background focus-visible:ring-ring/50 h-10 w-full rounded-xl border px-3 text-sm outline-none focus-visible:ring-[3px]";
+const errText = (e: unknown) => (e instanceof ApiError ? e.readable : "Something went wrong. Try again.");
 
 export default function AccountPage() {
-  const [saved, setSaved] = useState<string | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState("");
+  const { session, reload } = useSession();
+  const [name, setName] = useState("");
+  const [state, setState] = useState<{ key: string; status: "busy" | "done" | "error"; text?: string } | null>(null);
+  const [pw, setPw] = useState({ current: "", next: "" });
+  const [del, setDel] = useState({ confirm: "", password: "" });
 
-  const save = (key: string) => (e: React.FormEvent) => {
+  useEffect(() => {
+    if (session) setName(session.user.name);
+  }, [session]);
+
+  const run = (key: string, fn: () => Promise<unknown>) => async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaved(key);
-    setTimeout(() => setSaved(null), 2000);
+    setState({ key, status: "busy" });
+    try {
+      await fn();
+      setState({ key, status: "done" });
+      setTimeout(() => setState((s) => (s?.key === key && s.status === "done" ? null : s)), 2500);
+    } catch (x) {
+      setState({ key, status: "error", text: errText(x) });
+    }
   };
+  const status = (key: string) => (state?.key === key ? state : null);
 
   return (
     <>
-      <PageHeader title="Account" description="Your profile, sign-in and personal preferences." />
+      <PageHeader title="Account" description="Your profile and sign-in." />
 
       <div className="grid gap-6 xl:grid-cols-2">
         <Panel title="Profile">
-          <form onSubmit={save("profile")} className="space-y-4">
+          <form
+            onSubmit={run("profile", async () => {
+              await api("/me", { method: "PATCH", body: { name } });
+              await reload();
+            })}
+            className="space-y-4"
+          >
             <div className="flex items-center gap-4">
-              <Avatar name="Your Brand" className="size-14 text-base" />
-              <Button type="button" variant="outline" size="sm">
-                Change photo
-              </Button>
+              <Avatar name={name || "?"} className="size-14 text-base" />
+              <div className="text-sm">
+                <p className="font-medium">{session?.user.name}</p>
+                <p className="text-muted-foreground">Member since {session ? new Date(session.user.createdAt).toLocaleDateString() : "…"}</p>
+              </div>
             </div>
             <Field label="Your name">
-              <input defaultValue={brand.owner} className={inputCls} />
+              <input value={name} onChange={(e) => setName(e.target.value)} maxLength={80} required className={inputCls} />
             </Field>
-            <Field label="Email">
-              <input type="email" defaultValue="you@yourbrand.com" className={inputCls} />
+            <Field label="Email" hint="You log in with this email. To change it, contact support.">
+              <input type="email" value={session?.user.email ?? ""} readOnly className={cn(inputCls, "bg-muted")} />
             </Field>
-            <Field label="Time zone">
-              <select defaultValue="America/New_York" className={inputCls}>
-                <option value="America/New_York">Eastern Time (US)</option>
-                <option value="America/Chicago">Central Time (US)</option>
-                <option value="America/Los_Angeles">Pacific Time (US)</option>
-                <option value="Europe/London">London</option>
-                <option value="America/Toronto">Toronto</option>
-                <option value="Australia/Sydney">Sydney</option>
-              </select>
-            </Field>
-            <SaveButton done={saved === "profile"} />
+            <SaveRow s={status("profile")} />
           </form>
         </Panel>
 
-        <div className="space-y-6">
-          <Panel
-            title={
-              <span className="flex items-center gap-2">
-                <Moon className="size-4" /> Your night shift
-              </span>
-            }
-            description="Hours you're usually away. Sojao sends your morning summary when it ends."
+        <Panel title="Password" description="Changing it signs you out on every other device.">
+          <form
+            onSubmit={run("password", async () => {
+              if (pw.next.length < 8) throw new ApiError(400, { error: "Use at least 8 characters for the new password." });
+              await api("/me/password", { method: "POST", body: pw });
+              setPw({ current: "", next: "" });
+            })}
+            className="space-y-4"
           >
-            <form onSubmit={save("night")} className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="From">
-                  <input type="time" defaultValue="22:00" className={inputCls} />
-                </Field>
-                <Field label="To">
-                  <input type="time" defaultValue="08:00" className={inputCls} />
-                </Field>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span>Only send “needs you” alerts outside these hours</span>
-                <Toggle defaultOn label="Quiet alerts at night" />
-              </div>
-              <SaveButton done={saved === "night"} />
-            </form>
-          </Panel>
-
-          <Panel title="Password">
-            <form onSubmit={save("password")} className="space-y-4">
-              <Field label="Current password">
-                <input type="password" autoComplete="current-password" className={inputCls} />
-              </Field>
-              <Field label="New password">
-                <input type="password" autoComplete="new-password" className={inputCls} />
-              </Field>
-              <SaveButton done={saved === "password"} label="Update password" />
-            </form>
-          </Panel>
-        </div>
+            <Field label="Current password">
+              <input type="password" autoComplete="current-password" required value={pw.current} onChange={(e) => setPw({ ...pw, current: e.target.value })} className={inputCls} />
+            </Field>
+            <Field label="New password" hint="At least 8 characters.">
+              <input type="password" autoComplete="new-password" required minLength={8} value={pw.next} onChange={(e) => setPw({ ...pw, next: e.target.value })} className={inputCls} />
+            </Field>
+            <SaveRow s={status("password")} label="Update password" />
+          </form>
+        </Panel>
       </div>
 
-      <Panel className="border-destructive/40 mt-6" title="Delete account" description="This removes your brand, chats and settings from Sojao. It can't be undone.">
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <input
-            value={confirmDelete}
-            onChange={(e) => setConfirmDelete(e.target.value)}
-            placeholder="Type DELETE to confirm"
-            className={cn(inputCls, "sm:max-w-xs")}
-          />
-          <Button variant="destructive" disabled={confirmDelete !== "DELETE"}>
+      <Panel className="border-destructive/40 mt-6" title="Delete account" description="This deletes your login and any brand you alone own, with all its customers, chats and settings. It can't be undone.">
+        <form
+          onSubmit={run("delete", async () => {
+            await api("/me", { method: "DELETE", body: { password: del.password } });
+            window.location.href = "/";
+          })}
+          className="flex flex-col gap-3 sm:flex-row"
+        >
+          <input value={del.confirm} onChange={(e) => setDel({ ...del, confirm: e.target.value })} placeholder="Type DELETE to confirm" aria-label="Type DELETE to confirm" className={cn(inputCls, "sm:max-w-xs")} />
+          <input type="password" autoComplete="current-password" value={del.password} onChange={(e) => setDel({ ...del, password: e.target.value })} placeholder="Your password" aria-label="Your password" className={cn(inputCls, "sm:max-w-xs")} />
+          <Button type="submit" variant="destructive" disabled={del.confirm !== "DELETE" || !del.password || status("delete")?.status === "busy"}>
             Delete my account
           </Button>
-        </div>
+        </form>
+        {status("delete")?.status === "error" && <p className="mt-2 text-sm text-rose-600">{status("delete")?.text}</p>}
       </Panel>
     </>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
   return (
     <label className="block space-y-1.5">
       <span className="text-sm font-medium">{label}</span>
       {children}
+      {hint && <span className="text-muted-foreground block text-xs">{hint}</span>}
     </label>
   );
 }
 
-function SaveButton({ done, label = "Save" }: { done: boolean; label?: string }) {
+function SaveRow({ s, label = "Save changes" }: { s: { status: "busy" | "done" | "error"; text?: string } | null; label?: string }) {
   return (
-    <Button type="submit">
-      {done ? (
-        <>
-          <Check className="size-4" /> Saved
-        </>
-      ) : (
-        label
-      )}
-    </Button>
+    <div className="flex flex-wrap items-center gap-3">
+      <Button type="submit" disabled={s?.status === "busy"}>
+        {s?.status === "busy" ? <Loader2 className="size-4 animate-spin" /> : s?.status === "done" ? <Check className="size-4" /> : null}
+        {s?.status === "done" ? "Saved" : label}
+      </Button>
+      {s?.status === "error" && <span className="text-sm text-rose-600">{s.text}</span>}
+    </div>
   );
 }

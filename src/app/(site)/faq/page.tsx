@@ -2,8 +2,14 @@ import React from "react";
 
 import { Background } from "@/components/background";
 import { FAQ } from "@/components/blocks/faq";
-import { Testimonials } from "@/components/blocks/testimonials";
-import { DashedLine } from "@/components/dashed-line";
+import { pageMetadata } from "@/lib/seo";
+
+export const metadata = pageMetadata({
+  title: "FAQ",
+  description:
+    "Answers about Sojao AI: what the Marketing beta does, which apps it works with, Meta's messaging rules and pricing.",
+  path: "/faq",
+});
 
 const Page = () => {
   return (
@@ -13,8 +19,6 @@ const Page = () => {
         className2="max-w-xl lg:grid-cols-1"
         headerTag="h1"
       />
-      <DashedLine className="mx-auto max-w-xl" />
-      <Testimonials dashedLineClassName="hidden" />
     </Background>
   );
 };

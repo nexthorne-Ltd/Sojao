@@ -1,12 +1,14 @@
 "use client";
+import { useState } from "react";
+
+import Link from "next/link";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check } from "lucide-react";
 import { motion } from "motion/react";
-import { useAction } from "next-safe-action/hooks";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
-import { serverAction } from "@/actions/server-action";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -27,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { formSchema } from "@/lib/form-schema";
+import { ApiError, request } from "@/lib/marketing-api";
 
 type Schema = z.infer<typeof formSchema>;
 
@@ -37,25 +40,29 @@ export function ContactForm() {
       name: "",
       email: "",
       company: "",
-      employees: "",
+      employees: undefined,
       message: "",
       agree: false,
     } as unknown as Schema,
   });
-  const formAction = useAction(serverAction, {
-    onSuccess: () => {
-      // TODO: show success message
-      form.reset();
-    },
-    onError: () => {
-      // TODO: show error message
-    },
-  });
+  // Saved in the Sojao database; the team reads it in the admin panel (Messages).
+  const [isExecuting, setExecuting] = useState(false);
+  const [hasSucceeded, setSucceeded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const handleSubmit = form.handleSubmit(async (data: Schema) => {
-    formAction.execute(data);
+    setExecuting(true);
+    setError(null);
+    try {
+      await request("/contact", { method: "POST", body: { name: data.name, email: data.email, company: data.company || undefined, employees: data.employees || undefined, message: data.message } });
+      form.reset();
+      setSucceeded(true);
+    } catch (e) {
+      setError(e instanceof ApiError && e.status === 429 ? "Too many messages. Please try again later." : "Something went wrong. Please check the form and try again.");
+    } finally {
+      setExecuting(false);
+    }
   });
 
-  const { isExecuting, hasSucceeded } = formAction;
   if (hasSucceeded) {
     return (
       <div className="w-full gap-2 rounded-md border p-2 sm:p-5 md:p-8">
@@ -79,11 +86,16 @@ export function ContactForm() {
             <Check className="size-8" />
           </motion.div>
           <h2 className="mb-2 text-center text-2xl font-bold text-pretty">
-            Thank you
+            Thank you, your message is in.
           </h2>
           <p className="text-muted-foreground text-center text-lg text-pretty">
-            Form submitted successfully, we will get back to you soon
+            A real person will get back to you by email.
           </p>
+          <div className="mt-6 flex justify-center">
+            <Button variant="outline" onClick={() => setSucceeded(false)}>
+              Send another message
+            </Button>
+          </div>
         </motion.div>
       </div>
     );
@@ -127,7 +139,8 @@ export function ContactForm() {
               <FormLabel>Email address * </FormLabel>
               <FormControl>
                 <Input
-                  type="text"
+                  type="email"
+                  autoComplete="email"
                   value={field.value}
                   onChange={(e) => {
                     const val = e.target.value;
@@ -228,20 +241,33 @@ export function ContactForm() {
               <FormControl>
                 <Checkbox
                   checked={field.value}
-                  onCheckedChange={field.onChange}
-                  required
+                  onCheckedChange={(v) => field.onChange(v === true)}
                 />
               </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>I agree to the terms and conditions</FormLabel>
+              <div className="space-y-1 leading-snug">
+                <FormLabel className="inline font-normal">
+                  I agree to the{" "}
+                  <Link href="/privacy" className="underline underline-offset-4">
+                    Privacy Policy
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/terms" className="underline underline-offset-4">
+                    Terms of Service
+                  </Link>
+                </FormLabel>
 
                 <FormMessage />
               </div>
             </FormItem>
           )}
         />
+        {error && (
+          <p role="alert" className="text-destructive text-sm">
+            {error}
+          </p>
+        )}
         <div className="flex w-full items-center justify-end pt-3">
-          <Button className="rounded-lg" size="sm">
+          <Button type="submit" className="rounded-lg" disabled={isExecuting}>
             {isExecuting ? "Sending..." : "Send message"}
           </Button>
         </div>
