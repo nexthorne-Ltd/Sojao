@@ -144,6 +144,7 @@ export default function RootLayout({
             "neon",
             "electric",
             "cobalt",
+            "sojao",
           ]}
           disableTransitionOnChange
         >

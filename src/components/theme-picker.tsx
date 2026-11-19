@@ -21,6 +21,12 @@ export const THEMES = [
     swatch: "linear-gradient(135deg, #023661 50%, #db5227 50%)",
     ring: "#0a0c12",
   },
+  {
+    id: "sojao",
+    label: "Sojao Combo",
+    swatch: "linear-gradient(135deg, #10283b 50%, #1a9e9a 50%)",
+    ring: "#0b5e66",
+  },
 ] as const;
 
 export function ThemePicker() {

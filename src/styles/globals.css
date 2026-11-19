@@ -323,6 +323,46 @@
   --sidebar-ring: #db5227;
 }
 
+/* Sojao combo (light): off-white surfaces, navy text, teal buttons (palette #F6F7F5 #10283B #1A9E9A #0B5E66 #D9EFED) */
+.sojao {
+  --brand: #1a9e9a;
+  --logo-text: #10283b;
+  --glow: #1a9e9a;
+  --background: #f6f7f5;
+  --foreground: #10283b;
+  --card: #ffffff;
+  --card-foreground: #10283b;
+  --popover: #ffffff;
+  --popover-foreground: #10283b;
+  --primary: #1a9e9a;
+  --primary-foreground: #ffffff;
+  --secondary: #e4f3f1;
+  --secondary-foreground: #0b5e66;
+  --muted: #eef2f1;
+  --muted-foreground: #5a6b78;
+  --accent: #d9efed;
+  --accent-foreground: #0b5e66;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #dbe4e4;
+  --input: #d2dddd;
+  --ring: #1a9e9a;
+
+  --chart-1: #1a9e9a;
+  --chart-2: #10283b;
+  --chart-3: #0b5e66;
+  --chart-4: #7cc9c4;
+  --chart-5: #5a6b78;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #10283b;
+  --sidebar-primary: #1a9e9a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #d9efed;
+  --sidebar-accent-foreground: #0b5e66;
+  --sidebar-border: #dbe4e4;
+  --sidebar-ring: #1a9e9a;
+}
+
 /* Logo colors follow the selected theme */
 .dark {
   --logo-text: #8a96a3;
