@@ -3,7 +3,7 @@
 @import "tw-animate-css";
 @plugin '@tailwindcss/typography';
 
-@variant dark (&:is(.dark *, .crimson *, .toxic *, .inferno *, .neon *, .electric *, .cobalt *));
+@variant dark (&:is(.dark *, .crimson *, .toxic *, .inferno *, .neon *, .electric *, .cobalt *, .sojao-dusk *, .sojao-night *));
 
 :root {
   --brand: #db5227;
@@ -361,6 +361,126 @@
   --sidebar-accent-foreground: #0b5e66;
   --sidebar-border: #dbe4e4;
   --sidebar-ring: #1a9e9a;
+}
+
+/* Sojao Mist (light, a bit darker): teal-grey surfaces, navy text, deeper teal buttons */
+.sojao-mist {
+  --brand: #168a87;
+  --logo-text: #0e2433;
+  --glow: #168a87;
+  --background: #dde9e8;
+  --foreground: #0e2433;
+  --card: #ecf3f2;
+  --card-foreground: #0e2433;
+  --popover: #ecf3f2;
+  --popover-foreground: #0e2433;
+  --primary: #168a87;
+  --primary-foreground: #ffffff;
+  --secondary: #cbe2df;
+  --secondary-foreground: #0b5e66;
+  --muted: #d2e1df;
+  --muted-foreground: #4b5d6a;
+  --accent: #c4e1dd;
+  --accent-foreground: #0b4f56;
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: #c2d4d3;
+  --input: #b8cccb;
+  --ring: #168a87;
+
+  --chart-1: #168a87;
+  --chart-2: #0e2433;
+  --chart-3: #0b5e66;
+  --chart-4: #6dbcb6;
+  --chart-5: #4b5d6a;
+
+  --sidebar: #ecf3f2;
+  --sidebar-foreground: #0e2433;
+  --sidebar-primary: #168a87;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #c4e1dd;
+  --sidebar-accent-foreground: #0b4f56;
+  --sidebar-border: #c2d4d3;
+  --sidebar-ring: #168a87;
+}
+
+/* Sojao Dusk (mid-dark): navy-teal surfaces, bright teal buttons */
+.sojao-dusk {
+  --brand: #2bb5b0;
+  --logo-text: #a9c3c6;
+  --glow: #2bb5b0;
+  --background: #1b3a4a;
+  --foreground: #eef6f5;
+  --card: #214657;
+  --card-foreground: #eef6f5;
+  --popover: #214657;
+  --popover-foreground: #eef6f5;
+  --primary: #2bb5b0;
+  --primary-foreground: #0b1e29;
+  --secondary: #2a5366;
+  --secondary-foreground: #eef6f5;
+  --muted: #26495a;
+  --muted-foreground: #a9c3c6;
+  --accent: #2a5a66;
+  --accent-foreground: #d9f3f1;
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: rgb(43 181 176 / 22%);
+  --input: rgb(43 181 176 / 28%);
+  --ring: #2bb5b0;
+
+  --chart-1: #2bb5b0;
+  --chart-2: #7cc9c4;
+  --chart-3: #f0b35a;
+  --chart-4: #a9c3c6;
+  --chart-5: #e2765a;
+
+  --sidebar: #163242;
+  --sidebar-foreground: #eef6f5;
+  --sidebar-primary: #2bb5b0;
+  --sidebar-primary-foreground: #0b1e29;
+  --sidebar-accent: #2a5a66;
+  --sidebar-accent-foreground: #d9f3f1;
+  --sidebar-border: rgb(43 181 176 / 22%);
+  --sidebar-ring: #2bb5b0;
+}
+
+/* Sojao Night (dark): deep navy surfaces, teal buttons */
+.sojao-night {
+  --brand: #1fb3ad;
+  --logo-text: #93aeb6;
+  --glow: #1fb3ad;
+  --background: #0c1d2a;
+  --foreground: #eaf4f3;
+  --card: #12293a;
+  --card-foreground: #eaf4f3;
+  --popover: #12293a;
+  --popover-foreground: #eaf4f3;
+  --primary: #1fb3ad;
+  --primary-foreground: #06141d;
+  --secondary: #183449;
+  --secondary-foreground: #eaf4f3;
+  --muted: #163044;
+  --muted-foreground: #93aeb6;
+  --accent: #133b47;
+  --accent-foreground: #7fded8;
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: rgb(31 179 173 / 18%);
+  --input: rgb(31 179 173 / 24%);
+  --ring: #1fb3ad;
+
+  --chart-1: #1fb3ad;
+  --chart-2: #7cc9c4;
+  --chart-3: #f0b35a;
+  --chart-4: #93aeb6;
+  --chart-5: #e2765a;
+
+  --sidebar: #0a1824;
+  --sidebar-foreground: #eaf4f3;
+  --sidebar-primary: #1fb3ad;
+  --sidebar-primary-foreground: #06141d;
+  --sidebar-accent: #133b47;
+  --sidebar-accent-foreground: #7fded8;
+  --sidebar-border: rgb(31 179 173 / 18%);
+  --sidebar-ring: #1fb3ad;
 }
 
 /* Logo colors follow the selected theme */

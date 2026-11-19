@@ -27,6 +27,24 @@ export const THEMES = [
     swatch: "linear-gradient(135deg, #10283b 50%, #1a9e9a 50%)",
     ring: "#0b5e66",
   },
+  {
+    id: "sojao-mist",
+    label: "Sojao Mist",
+    swatch: "linear-gradient(135deg, #dde9e8 50%, #168a87 50%)",
+    ring: "#168a87",
+  },
+  {
+    id: "sojao-dusk",
+    label: "Sojao Dusk",
+    swatch: "linear-gradient(135deg, #1b3a4a 50%, #2bb5b0 50%)",
+    ring: "#2bb5b0",
+  },
+  {
+    id: "sojao-night",
+    label: "Sojao Night",
+    swatch: "linear-gradient(135deg, #0c1d2a 50%, #1fb3ad 50%)",
+    ring: "#1fb3ad",
+  },
 ] as const;
 
 export function ThemePicker() {

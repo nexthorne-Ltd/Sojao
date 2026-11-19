@@ -145,6 +145,9 @@ export default function RootLayout({
             "electric",
             "cobalt",
             "sojao",
+            "sojao-mist",
+            "sojao-dusk",
+            "sojao-night",
           ]}
           disableTransitionOnChange
         >
